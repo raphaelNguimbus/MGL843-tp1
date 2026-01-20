@@ -15,7 +15,7 @@
 Notre expérience a été intuitive et très rapide grâce à l'agent **Gemini 3 Pro** intégré dans Visual Studio Code. Il nous a fallu seulement quelques prompts détaillant l'ensemble du TP1 pour générer le projet, les tests unitaires et le pipeline de test.
 
 * **Points positifs :** L'agent a été bluffant par sa compréhension globale des requis et le respect des contraintes techniques. Il a réussi à implémenter toutes les fonctionnalités demandées.
-* **Points négatifs/Difficultés :** L'IA a omis une bonne pratique essentielle : l'ajout d'un fichier `.gitignore` pour éviter de versionner des fichiers indésirables. De plus, elle a affirmé que le projet était terminé et fonctionnel alors que l'exécution des tests révélait encore un échec (hallucination sur le résultat des tests).
+* **Points négatifs/Difficultés :** L'IA a omis une bonne pratique essentielle : l'ajout d'un fichier `.gitignore` pour éviter de versionner des fichiers indésirables. De plus, elle a affirmé que le projet était terminé et fonctionnel alors que l'exécution des tests révélait encore un échec (hallucination sur le résultat des tests). Plus tard dans le TP, notre projet a été modélisé selon un paradigme fonctionnel, ce qui nous a bloqués pour la partie visualisation. Bien que le modèle ait été correctement généré par `ts2famix`, il s'est avéré inutilisable pour la visualisation avec Roassal 3.
 
 **Combien de temps avez-vous pris pour créer ce projet TypeScript avec l’IA générative ? Avez-vous respecté le temps suggéré ?**
 
