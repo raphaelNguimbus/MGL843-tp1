@@ -1,0 +1,54 @@
+OBJECTIF
+Produire un petit projet logiciel complet en TypeScript, en respectant strictement les contraintes ci-dessous. 
+Le projet doit être réalisé en programmation intuitive (« vibe coding »), sans conception préalable ni refactoring manuel.
+
+CONTEXTE
+Le projet doit être généré comme s’il était produit directement dans VSCode avec un assistant de génération de code, puis commité dans un dépôt GitHub.
+
+CONTRAINTES TECHNIQUES OBLIGATOIRES
+- Langage : TypeScript
+- Environnement : Node.js
+- Interface : CLI UNIQUEMENT (aucune API REST, aucun serveur HTTP)
+- Persistance locale : stockage local (fichier JSON, SQLite ou équivalent)
+- Gestion du projet avec npm
+
+FONCTIONNALITÉS MINIMALES À IMPLÉMENTER
+1. Créer une note via la ligne de commande
+2. Lister toutes les notes via la ligne de commande
+3. Associer une ou plusieurs étiquettes (tags) à une note
+4. Rechercher des notes via la ligne de commande (par contenu et/ou par tags)
+5. Sauvegarder et exporter les notes localement
+
+TESTS AUTOMATISÉS (OBLIGATOIRES)
+- Framework de test : Jest
+- Type de tests : tests de fonctionnalité (end-to-end ou intégration légère)
+- Les tests doivent interagir avec la CLI (exécution de commandes)
+- Aucun test unitaire
+- Les tests doivent couvrir toutes les fonctionnalités minimales listées ci-dessus
+- Les tests doivent être exécutables via une commande npm (ex. `npm test`)
+- Prévoir une configuration compatible avec une exécution automatique en CI (GitHub Actions), même minimale
+
+RÈGLES IMPÉRATIVES
+- Tout le code (fonctionnalités et tests) doit être généré directement
+- Aucune conception préalable (pas de diagrammes, pas de patrons, pas de réflexion architecturale formelle)
+- Aucun refactoring manuel après génération
+- La première solution plausible produite doit être conservée telle quelle
+- Toute modification ou ajout ultérieur doit se faire uniquement par de nouvelles instructions
+- Une fois le projet fonctionnel et les tests passants, le code est considéré comme figé
+
+ATTENDUS
+- Arborescence complète du projet
+- Fichiers TypeScript fonctionnels
+- CLI exécutable depuis la ligne de commande
+- Fichier package.json correctement configuré
+- Configuration Jest fonctionnelle
+- Instructions claires pour lancer la CLI et exécuter les tests
+
+CONTRAINTE DE TEMPS
+Le projet doit être réaliste pour une durée de réalisation de 45 à 60 minutes.
+
+INSTRUCTION FINALE
+Produis directement le projet conforme à toutes les exigences ci-dessus.
+Ne propose pas d’alternatives.
+Ne discute pas les choix.
+Ne suggère pas d’améliorations futures.
