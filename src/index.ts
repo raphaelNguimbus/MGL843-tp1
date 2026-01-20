@@ -1,80 +1,96 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { addNote, listNotes, addTags, searchNotes, exportNotes } from './notes';
+import { NoteManager } from './notes';
 
-const program = new Command();
+class NotesCLI {
+    private program: Command;
+    private noteManager: NoteManager;
 
-program
-    .name('notes')
-    .description('CLI for managing personal notes')
-    .version('1.0.0');
+    constructor() {
+        this.program = new Command();
+        this.noteManager = new NoteManager();
+        this.configure();
+    }
 
-program
-    .command('create')
-    .description('Create a new note')
-    .argument('<content>', 'Note content')
-    .option('-t, --tags <tags...>', 'Tags for the note')
-    .action((content, options) => {
-        const tags = options.tags || [];
-        const note = addNote(content, tags);
-        console.log(`Note created with ID: ${note.id}`);
-    });
+    private configure() {
+        this.program
+            .name('notes')
+            .description('CLI for managing personal notes')
+            .version('1.0.0');
 
-program
-    .command('list')
-    .description('List all notes')
-    .action(() => {
-        const notes = listNotes();
-        if (notes.length === 0) {
-            console.log('No notes found.');
-        } else {
-            notes.forEach((note) => {
-                console.log(`[${note.id}] ${note.createdAt} - ${note.content} (Tags: ${note.tags.join(', ')})`);
+        this.program
+            .command('create')
+            .description('Create a new note')
+            .argument('<content>', 'Note content')
+            .option('-t, --tags <tags...>', 'Tags for the note')
+            .action((content, options) => {
+                const tags = options.tags || [];
+                const note = this.noteManager.addNote(content, tags);
+                console.log(`Note created with ID: ${note.id}`);
             });
-        }
-    });
 
-program
-    .command('tag')
-    .description('Add tags to a note')
-    .argument('<id>', 'Note ID')
-    .argument('<tags...>', 'Tags to add')
-    .action((id, tags) => {
-        const note = addTags(id, tags);
-        if (note) {
-            console.log(`Tags added to note ${id}`);
-        } else {
-            console.error(`Note with ID ${id} not found.`);
-        }
-    });
-
-program
-    .command('search')
-    .description('Search notes by content or tags')
-    .argument('<query>', 'Search query')
-    .action((query) => {
-        const results = searchNotes(query);
-        if (results.length === 0) {
-            console.log('No matching notes found.');
-        } else {
-            results.forEach((note) => {
-                console.log(`[${note.id}] ${note.content} (Tags: ${note.tags.join(', ')})`);
+        this.program
+            .command('list')
+            .description('List all notes')
+            .action(() => {
+                const notes = this.noteManager.listNotes();
+                if (notes.length === 0) {
+                    console.log('No notes found.');
+                } else {
+                    notes.forEach((note) => {
+                        console.log(`[${note.id}] ${note.createdAt} - ${note.content} (Tags: ${note.tags.join(', ')})`);
+                    });
+                }
             });
-        }
-    });
 
-program
-    .command('export')
-    .description('Export notes to a JSON file')
-    .argument('<file>', 'Output file path')
-    .action((file) => {
-        try {
-            exportNotes(file);
-            console.log(`Notes exported to ${file}`);
-        } catch (e: any) {
-            console.error(`Failed to export notes: ${e.message}`);
-        }
-    });
+        this.program
+            .command('tag')
+            .description('Add tags to a note')
+            .argument('<id>', 'Note ID')
+            .argument('<tags...>', 'Tags to add')
+            .action((id, tags) => {
+                const note = this.noteManager.addTags(id, tags);
+                if (note) {
+                    console.log(`Tags added to note ${id}`);
+                } else {
+                    console.error(`Note with ID ${id} not found.`);
+                }
+            });
 
-program.parse();
+        this.program
+            .command('search')
+            .description('Search notes by content or tags')
+            .argument('<query>', 'Search query')
+            .action((query) => {
+                const results = this.noteManager.searchNotes(query);
+                if (results.length === 0) {
+                    console.log('No matching notes found.');
+                } else {
+                    results.forEach((note) => {
+                        console.log(`[${note.id}] ${note.content} (Tags: ${note.tags.join(', ')})`);
+                    });
+                }
+            });
+
+        this.program
+            .command('export')
+            .description('Export notes to a JSON file')
+            .argument('<file>', 'Output file path')
+            .action((file) => {
+                try {
+                    this.noteManager.exportNotes(file);
+                    console.log(`Notes exported to ${file}`);
+                } catch (e: any) {
+                    console.error(`Failed to export notes: ${e.message}`);
+                }
+            });
+    }
+
+    public run() {
+        this.program.parse();
+    }
+}
+
+const cli = new NotesCLI();
+cli.run();

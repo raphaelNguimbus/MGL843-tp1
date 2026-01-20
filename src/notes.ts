@@ -8,65 +8,71 @@ export interface Note {
     createdAt: string;
 }
 
-const NOTES_FILE = path.join(process.cwd(), 'notes.json');
+export class NoteManager {
+    private filePath: string;
 
-export const loadNotes = (): Note[] => {
-    if (!fs.existsSync(NOTES_FILE)) {
-        return [];
+    constructor(fileName: string = 'notes.json') {
+        this.filePath = path.join(process.cwd(), fileName);
     }
-    const data = fs.readFileSync(NOTES_FILE, 'utf-8');
-    try {
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
+
+    private loadNotes(): Note[] {
+        if (!fs.existsSync(this.filePath)) {
+            return [];
+        }
+        const data = fs.readFileSync(this.filePath, 'utf-8');
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            return [];
+        }
     }
-};
 
-export const saveNotes = (notes: Note[]) => {
-    fs.writeFileSync(NOTES_FILE, JSON.stringify(notes, null, 2));
-};
-
-export const addNote = (content: string, tags: string[] = []): Note => {
-    const notes = loadNotes();
-    const newNote: Note = {
-        id: Date.now().toString(),
-        content,
-        tags,
-        createdAt: new Date().toISOString(),
-    };
-    notes.push(newNote);
-    saveNotes(notes);
-    return newNote;
-};
-
-export const listNotes = (): Note[] => {
-    return loadNotes();
-};
-
-export const addTags = (id: string, tags: string[]): Note | null => {
-    const notes = loadNotes();
-    const note = notes.find((n) => n.id === id);
-    if (note) {
-        // Avoid duplicates
-        const uniqueTags = new Set([...note.tags, ...tags]);
-        note.tags = Array.from(uniqueTags);
-        saveNotes(notes);
-        return note;
+    private saveNotes(notes: Note[]): void {
+        fs.writeFileSync(this.filePath, JSON.stringify(notes, null, 2));
     }
-    return null;
-};
 
-export const searchNotes = (query: string): Note[] => {
-    const notes = loadNotes();
-    const lowerQuery = query.toLowerCase();
-    return notes.filter((n) =>
-        n.content.toLowerCase().includes(lowerQuery) ||
-        n.tags.some((t) => t.toLowerCase().includes(lowerQuery))
-    );
-};
+    public addNote(content: string, tags: string[] = []): Note {
+        const notes = this.loadNotes();
+        const newNote: Note = {
+            id: Date.now().toString(),
+            content,
+            tags,
+            createdAt: new Date().toISOString(),
+        };
+        notes.push(newNote);
+        this.saveNotes(notes);
+        return newNote;
+    }
 
-export const exportNotes = (filePath: string) => {
-    const notes = loadNotes();
-    const targetPath = path.resolve(process.cwd(), filePath);
-    fs.writeFileSync(targetPath, JSON.stringify(notes, null, 2));
+    public listNotes(): Note[] {
+        return this.loadNotes();
+    }
+
+    public addTags(id: string, tags: string[]): Note | null {
+        const notes = this.loadNotes();
+        const note = notes.find((n) => n.id === id);
+        if (note) {
+            // Avoid duplicates
+            const uniqueTags = new Set([...note.tags, ...tags]);
+            note.tags = Array.from(uniqueTags);
+            this.saveNotes(notes);
+            return note;
+        }
+        return null;
+    }
+
+    public searchNotes(query: string): Note[] {
+        const notes = this.loadNotes();
+        const lowerQuery = query.toLowerCase();
+        return notes.filter((n) =>
+            n.content.toLowerCase().includes(lowerQuery) ||
+            n.tags.some((t) => t.toLowerCase().includes(lowerQuery))
+        );
+    }
+
+    public exportNotes(filePath: string): void {
+        const notes = this.loadNotes();
+        const targetPath = path.resolve(process.cwd(), filePath);
+        fs.writeFileSync(targetPath, JSON.stringify(notes, null, 2));
+    }
 }
