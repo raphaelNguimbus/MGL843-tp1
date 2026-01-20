@@ -39,7 +39,7 @@ class NotesCLI {
                     console.log('No notes found.');
                 } else {
                     notes.forEach((note) => {
-                        console.log(`[${note.id}] ${note.createdAt} - ${note.content} (Tags: ${note.tags.join(', ')})`);
+                        console.log(`[${note.id}] ${note.createdAt} - ${note.content} (Tags: ${note.tags.map(t => t.name).join(', ')})`);
                     });
                 }
             });
@@ -68,7 +68,7 @@ class NotesCLI {
                     console.log('No matching notes found.');
                 } else {
                     results.forEach((note) => {
-                        console.log(`[${note.id}] ${note.content} (Tags: ${note.tags.join(', ')})`);
+                        console.log(`[${note.id}] ${note.content} (Tags: ${note.tags.map(t => t.name).join(', ')})`);
                     });
                 }
             });

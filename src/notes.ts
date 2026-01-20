@@ -1,10 +1,22 @@
 import fs from 'fs';
 import path from 'path';
 
+export class Tag {
+    constructor(public name: string) { }
+
+    toString(): string {
+        return this.name;
+    }
+
+    toJSON(): string {
+        return this.name;
+    }
+}
+
 export interface Note {
     id: string;
     content: string;
-    tags: string[];
+    tags: Tag[];
     createdAt: string;
 }
 
@@ -21,7 +33,14 @@ export class NoteManager {
         }
         const data = fs.readFileSync(this.filePath, 'utf-8');
         try {
-            return JSON.parse(data);
+            const rawNotes = JSON.parse(data);
+            // Migrate string tags to Tag objects if necessary
+            return rawNotes.map((note: any) => ({
+                ...note,
+                tags: (note.tags || []).map((t: string | Tag) =>
+                    typeof t === 'string' ? new Tag(t) : new Tag(t.name)
+                )
+            }));
         } catch (e) {
             return [];
         }
@@ -36,7 +55,7 @@ export class NoteManager {
         const newNote: Note = {
             id: Date.now().toString(),
             content,
-            tags,
+            tags: tags.map(t => new Tag(t)),
             createdAt: new Date().toISOString(),
         };
         notes.push(newNote);
@@ -53,8 +72,13 @@ export class NoteManager {
         const note = notes.find((n) => n.id === id);
         if (note) {
             // Avoid duplicates
-            const uniqueTags = new Set([...note.tags, ...tags]);
-            note.tags = Array.from(uniqueTags);
+            const existingTagNames = new Set(note.tags.map(t => t.name));
+            tags.forEach(t => {
+                if (!existingTagNames.has(t)) {
+                    note.tags.push(new Tag(t));
+                    existingTagNames.add(t);
+                }
+            });
             this.saveNotes(notes);
             return note;
         }
@@ -66,7 +90,7 @@ export class NoteManager {
         const lowerQuery = query.toLowerCase();
         return notes.filter((n) =>
             n.content.toLowerCase().includes(lowerQuery) ||
-            n.tags.some((t) => t.toLowerCase().includes(lowerQuery))
+            n.tags.some((t) => t.name.toLowerCase().includes(lowerQuery))
         );
     }
 
