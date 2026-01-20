@@ -4,5 +4,6 @@ export default {
     transform: {
         '^.+\\.tsx?$': ['ts-jest', { isolatedModules: true }],
     },
+    testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
     testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 };
