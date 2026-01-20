@@ -17,8 +17,6 @@ Notre expérience a été intuitive et très rapide grâce à l'agent **Gemini 3
 * **Points positifs :** L'agent a été bluffant par sa compréhension globale des requis et le respect des contraintes techniques. Il a réussi à implémenter toutes les fonctionnalités demandées.
 * **Points négatifs/Difficultés :** L'IA a omis une bonne pratique essentielle : l'ajout d'un fichier `.gitignore` pour éviter de versionner des fichiers indésirables. De plus, elle a affirmé que le projet était terminé et fonctionnel alors que l'exécution des tests révélait encore un échec (hallucination sur le résultat des tests). Aussi le LLM a ajouté des dependences externe sans nous demander l'avis au préalable. 
 
-* Plus tard dans le TP, notre projet a été modélisé selon un paradigme fonctionnel, ce qui nous a bloqués pour la partie visualisation. Bien que le modèle ait été correctement généré par `ts2famix`, il s'est avéré inutilisable pour la visualisation avec Roassal 3.
-
 **Combien de temps avez-vous pris pour créer ce projet TypeScript avec l’IA générative ? Avez-vous respecté le temps suggéré ?**
 
 La création du projet et les légers ajustements nous ont pris environ **20 minutes**, ce qui nous positionne largement en dessous de l'estimation initiale de 45 à 60 minutes.
@@ -43,12 +41,27 @@ Non, il n'est pas possible de tout modéliser fidèlement de TypeScript dans un 
 2.  **Typage structurel :** TypeScript utilise le "duck typing" (compatibilité basée sur la forme de l'objet), alors qu'UML repose généralement sur une hiérarchie explicite (nominale).
 
 ### 3.3 Partie 2 : Visualisation du projet TypeScript
-> Quelles sont les classes remarquables dans le projet ? Comment le voyez-vous dans la visualisation ?
 
-> Expliquez le rôle de ces classes dans le projet. Pourquoi sont-elles importantes ?
+> **Quelles sont les classes remarquables dans le projet ? Comment le voyez-vous dans la visualisation ?**
 
-> Commentez sur la qualité de la conception du projet. Y a-t-il des classes qui semblent mal conçues ?
-Pourquoi ?
+Nous avons identifié une classe particulièrement remarquable : **`NoteManager`**. Celle-ci centralise la logique avec 8 méthodes.
+Dans la visualisation générée par Roassal, elle apparaît **amplement plus grande** que les autres classes, ce qui souligne sa complexité et son poids dans le projet.
+
+![Visualisation des classes](./images/file.png "Visualisation Roassal")
+
+> **Expliquez le rôle de ces classes dans le projet. Pourquoi sont-elles importantes ?**
+
+* **`NotesCLI`** : Gère les interactions avec l'utilisateur via la console (terminal), en s'appuyant sur la librairie externe `commander`. Elle sert de point d'entrée.
+* **`Tag`** : Classe modèle simple représentant une étiquette via un attribut `name`.
+* **`NoteManager`** : Agit comme un "pseudo-repository". Elle gère la persistance des données (lecture/écriture du fichier JSON) et la logique métier (ajout/modification de notes).
+
+> **Commentez sur la qualité de la conception du projet. Y a-t-il des classes qui semblent mal conçues ? Pourquoi ?**
+
+*Note de contexte : Notre projet a initialement été modélisé selon un paradigme fonctionnel, ce qui nous a bloqués pour la partie visualisation. Bien que le modèle ait été correctement généré par `ts2famix`, il s'est avéré inexploitable avec Roassal 3. Nous avons dû refaire une passe avec le LLM pour favoriser un paradigme orienté objet.*
+
+Concernant la conception actuelle, la classe **`NoteManager`** présente un défaut d'optimisation.
+Les interactions avec les données ne sont pas optimisées : chaque opération (ajout, tag, export, list) appelle la méthode `loadNotes`, provoquant une **lecture système du fichier JSON à chaque fois**.
+**Amélioration suggérée :** Une approche avec un chargement unique (caching) en mémoire (instanciation d'un tableau) au démarrage de l'application aurait été plus adéquate pour réduire les accès disque et améliorer les performances.
 
 ### 3.4 Partie 3 : Exportation des données
 
