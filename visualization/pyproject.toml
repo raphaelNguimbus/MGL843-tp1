@@ -1,0 +1,9 @@
+[project]
+name = "mgl843-tp1"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "pandas>=2.2.3",
+]

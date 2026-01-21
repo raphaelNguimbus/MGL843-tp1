@@ -5,3 +5,9 @@ coverage/
 notes.json
 exported_notes.json
 *.log
+
+# Python environment
+.env
+.venv/
+__pycache__/
+*.pyc
