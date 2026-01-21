@@ -45,3 +45,22 @@ npm start -- export ./my-notes.json
 ```bash
 npm test
 ```
+
+## Visualization
+
+A Python script to visualize class metrics exported from Moose/Pharo.
+
+### Dependencies
+- Python 3.14+
+- pandas
+- matplotlib
+
+### Setup & Run
+
+```bash
+cd visualization
+uv sync
+uv run python visualize_metrics.py
+```
+
+This reads `notes-cli-classes.csv` and generates a bar chart in `images/fig4-metrics-chart.png`.
