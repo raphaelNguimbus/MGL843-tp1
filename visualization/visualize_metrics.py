@@ -36,7 +36,7 @@ for container in ax.containers:
 plt.tight_layout()
 
 # Sauvegarder l'image
-output_file = "../images/fig4-metrics-chart.png"
+output_file = "fig4-metrics-chart.png"
 plt.savefig(output_file, dpi=300, bbox_inches="tight")
 print(f"Visualisation sauvegardée: {output_file}")
 
