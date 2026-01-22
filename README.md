@@ -7,7 +7,7 @@
 **Avez-vous déjà utilisé des outils d’IA générative pour programmer avant ce laboratoire ? Si oui, lesquels et dans quel contexte ?**
 
 * **Raphael :** TODO
-* **Pamela :** TODO
+* **Pamela :** Oui, j'utilise Claude avec Zed pour mes projets perso. J'ai aussi essayé Warp pour le CLI, et Windsurf au travail pendant quelques jours (accès gratuit, mais vraiment pas terrible). D'habitude je donne des tâches précises - implémenter tel endpoint, refactorer telle fonction, et je review tout ce qu'il génère. J'ai l'impression que ces modèles deviennent moins performants avec le temps - j'ai lu que certains providers réduisent la quantization pour économiser des ressources.
 * **Dorian :** Oui, utilisation quotidienne intégrée au flux de travail (via l'IDE Cursor). Utilisation pour la résolution de problèmes complexes et, lors de projets personnels, pour l'idéation d'architecture ou de pistes de développement (en utilisant des prompts de type "Agis comme un développeur Senior" pour éviter les mauvaises pratiques).
 
 **Quelle a été votre expérience globale en utilisant l’IA générative pour créer ce projet TypeScript ? Quels aspects ont bien fonctionné et quels aspects ont été plus difficiles ?**
