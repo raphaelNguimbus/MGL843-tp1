@@ -47,7 +47,17 @@ Non, il n'est pas possible de tout modéliser fidèlement de TypeScript dans un 
 Nous avons identifié une classe particulièrement remarquable : **`NoteManager`**. Celle-ci centralise la logique avec 8 méthodes.
 Dans la visualisation générée par Roassal, elle apparaît **amplement plus grande** que les autres classes, ce qui souligne sa complexité et son poids dans le projet.
 
-![Visualisation des classes](./images/file.png "Visualisation Roassal")
+![Moose Inspector](./images/fig0-moose-inspector.png "Moose Inspector")
+**Figure 0:** Inspection du modèle dans Moose - 3 classes identifiées (Tag, NoteManager, NotesCLI)
+
+![Visualisation des classes](./images/fig1-roassal-classes.png "Visualisation Roassal")
+**Figure 1:** Visualisation des classes avec Roassal
+
+![Navigation NotesCLI](./images/fig2-notescli-class.png "NotesCLI")
+**Figure 2:** Navigation vers la classe NotesCLI dans Moose
+
+![Navigation NoteManager](./images/fig3-notemanager-class.png "NoteManager")
+**Figure 3:** Navigation vers la classe NoteManager dans Moose
 
 > **Expliquez le rôle de ces classes dans le projet. Pourquoi sont-elles importantes ?**
 
@@ -65,8 +75,48 @@ Les interactions avec les données ne sont pas optimisées : chaque opération (
 
 ### 3.4 Partie 3 : Exportation des données
 
-Lien du répot Github: https://github.com/raphaelNguimbus/MGL843-tp1
+
+#### Classe Pharo
+
+**Nom de la classe:** `TypeScriptModelCSVExporter`
+**Package:** `MGL843-TP1-Export`
+
+```smalltalk
+Object subclass: #TypeScriptModelCSVExporter
+    instanceVariableNames: 'model outputPath'
+    classVariableNames: ''
+    package: 'MGL843-TP1-Export'.
+
+TypeScriptModelCSVExporter >> exportToCSV
+    | classes writeStream |
+    classes := model allModelClasses.
+    writeStream := outputPath asFileReference writeStream.
+    [
+        (NeoCSVWriter on: writeStream)
+            nextPut: #('ClassName' 'NumberOfMethods' 'NumberOfAttributes');
+            nextPutAll: (classes collect: [ :class |
+                { class name. class methods size. class attributes size }
+            ])
+    ] ensure: [ writeStream close ].
+    ^ 'CSV exported to ', outputPath.
+```
+
+#### Utilisation de NeoCSV
+
+On utilise **NeoCSV** pour générer le CSV. Le principe est simple: on crée un `NeoCSVWriter` sur un stream, on écrit les en-têtes avec `nextPut:`, puis toutes les données avec `nextPutAll:`. Le bloc `ensure:` garantit que le fichier se ferme correctement même si quelque chose plante.
+
+#### Synchronisation avec Iceberg
+
+Le code a été pushé sur GitHub avec Iceberg. Ça a demandé quelques étapes de configuration (repair repository, créer les métadonnées, etc.) mais au final ça fonctionne. Voir les captures `fig5-iceberg-sync.png` et `fig5b-iceberg-history.png`.
+
+#### Données exportées
+
+Le fichier exporté est `notes-cli-classes.csv` (voir `fig4-csv-export.png`).
+
+**Lien du dépôt GitHub:** https://github.com/raphaelNguimbus/MGL843-tp1
 
 ### 3.5 Partie 4 : Visualisation externe
 
-TODO: Ajout des screenshots
+On a utilisé **Python** avec Pandas et Matplotlib pour visualiser les données du CSV.
+
+Le script `visualization/visualize_metrics.py` lit le fichier CSV et génère un graphique en barres groupées montrant le nombre de méthodes et d'attributs par classe. Voir `fig6-metrics-chart.png` pour le résultat.
