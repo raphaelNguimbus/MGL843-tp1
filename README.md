@@ -105,6 +105,11 @@ TypeScriptModelCSVExporter >> exportToCSV
 
 On utilise **NeoCSV** pour générer le CSV. Le principe est simple: on crée un `NeoCSVWriter` sur un stream, on écrit les en-têtes avec `nextPut:`, puis toutes les données avec `nextPutAll:`. Le bloc `ensure:` garantit que le fichier se ferme correctement même si quelque chose plante.
 
+**Références:**
+- NeoCSV Library: https://github.com/svenvc/NeoCSV
+- Enterprise Pharo (NeoCSV Chapter): https://books.pharo.org/enterprise-pharo/
+- Moose Platform & Famix: https://github.com/moosetechnology/Moose
+
 #### Synchronisation avec Iceberg
 
 Le code a été pushé sur GitHub avec Iceberg. Ça a demandé quelques étapes de configuration (repair repository, créer les métadonnées, etc.) mais au final ça fonctionne. Voir les captures `fig5-iceberg-sync.png` et `fig5b-iceberg-history.png`.
