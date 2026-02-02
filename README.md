@@ -77,7 +77,8 @@ Ce script permet de générer un graphique depuis les métriques des classes du 
 
 **Avez-vous déjà utilisé des outils d’IA générative pour programmer avant ce laboratoire ? Si oui, lesquels et dans quel contexte ?**
 
-- **Raphael :** TODO
+- **Raphael :** Oui, et plus souvent que je ne peux le compter. Dans ma routine de développeur au travail, j’utilise régulièrement des outils d’IA générative pour accomplir mes tâches plus rapidement, mais aussi pour apprendre. Je les utilise parfois comme un professeur, notamment lorsque je souhaite comprendre rapidement un concept, plutôt que de passer par des plateformes comme Stack Overflow.
+Dans mon quotidien de développeur, j’ai eu l’occasion d’utiliser plusieurs outils, notamment Antigravity, Cursor et Windsurf. Personnellement, je les utilise principalement en mode plan, c’est-à-dire que je passe systématiquement en revue toutes les modifications proposées avant de leur permettre d’être appliquées. J’ai également exploré plus en profondeur des outils comme BMAD.  
 - **Pamela :** Oui, j'utilise Claude avec Zed pour mes projets perso. J'ai aussi essayé Warp pour le CLI, et Windsurf au travail pendant quelques jours (accès gratuit, mais vraiment pas terrible). D'habitude je donne des tâches précises - implémenter tel endpoint, refactorer telle fonction, et je review tout ce qu'il génère. J'ai l'impression que ces modèles deviennent moins performants avec le temps - j'ai lu que certains providers réduisent la quantization pour économiser des ressources.
 - **Dorian :** Oui, utilisation quotidienne intégrée au flux de travail (via l'IDE Cursor). Utilisation pour la résolution de problèmes complexes et, lors de projets personnels, pour l'idéation d'architecture ou de pistes de développement (en utilisant des prompts de type "Agis comme un développeur Senior" pour éviter les mauvaises pratiques).
 
