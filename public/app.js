@@ -742,3 +742,17 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        TagInputComponent,
+        formatDate,
+        escapeHtml,
+        allNotes,
+        allTags,
+        displayNotes,
+        createNoteForm,
+        noteContentInput,
+        searchInput
+    };
+}
