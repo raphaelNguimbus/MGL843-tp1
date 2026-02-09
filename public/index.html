@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App - Gestionnaire de Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="background-gradient"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="logo-icon">📝</span>
+                    Notes App
+                </h1>
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Rechercher des notes...">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Create Note Section -->
+        <section class="create-section">
+            <div class="card">
+                <h2 class="section-title">Créer une nouvelle note</h2>
+                <form id="createNoteForm">
+                    <div class="form-group">
+                        <label for="noteContent">Contenu de la note</label>
+                        <textarea id="noteContent" class="form-control" rows="4" placeholder="Écrivez votre note ici..."
+                            required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="noteTags">Tags</label>
+                        <div class="tag-input-container">
+                            <div class="tag-pills" id="selectedTags"></div>
+                            <input type="text" id="noteTags" class="tag-text-input"
+                                placeholder="Tapez pour rechercher ou créer un tag..." autocomplete="off">
+                        </div>
+                        <div class="tag-autocomplete" id="tagAutocomplete" style="display: none;"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-icon">✨</span>
+                        Créer la note
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Notes List Section -->
+        <section class="notes-section">
+            <div class="notes-header">
+                <h2 class="section-title">Mes Notes</h2>
+                <button id="exportAllBtn" class="btn btn-secondary">
+                    <span class="btn-icon">📥</span>
+                    Exporter tout
+                </button>
+            </div>
+
+            <div id="notesContainer" class="notes-grid">
+                <!-- Notes will be inserted here dynamically -->
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <span class="empty-icon">📭</span>
+                <p>Aucune note trouvée</p>
+                <small>Créez votre première note ci-dessus!</small>
+            </div>
+        </section>
+
+        <!-- Tag Management Section -->
+        <section class="tag-management-section">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Gestion des Tags</h2>
+                    <button id="addTagBtn" class="btn btn-primary btn-small">
+                        <span class="btn-icon">+</span>
+                        Nouveau tag
+                    </button>
+                </div>
+                <div id="tagManagementContainer" class="tag-management-grid">
+                    <!-- Tags will be inserted here dynamically -->
+                </div>
+                <div id="emptyTagsState" class="empty-state" style="display: none;">
+                    <span class="empty-icon">🏷️</span>
+                    <p>Aucun tag créé</p>
+                    <small>Les tags seront créés automatiquement en les utilisant dans les notes!</small>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Custom Edit Modal -->
+    <div id="editModal" class="custom-modal" style="display: none;">
+        <div class="custom-modal-overlay" onclick="closeEditModal()"></div>
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <div class="modal-title-group">
+                    <h2>Modifier la note</h2>
+                    <span id="modalNoteId" class="modal-note-id"></span>
+                </div>
+                <button class="modal-close-btn" onclick="closeEditModal()">✕</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="form-group">
+                    <label for="editNoteContent">Contenu</label>
+                    <textarea id="editNoteContent" class="form-control" rows="6" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editNoteTags">Tags</label>
+                    <div class="tag-input-container">
+                        <div class="tag-pills" id="editSelectedTags"></div>
+                        <input type="text" id="editNoteTags" class="tag-text-input"
+                            placeholder="Tapez pour rechercher ou créer un tag..." autocomplete="off">
+                    </div>
+                    <div class="tag-autocomplete" id="editTagAutocomplete" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+                    Annuler
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveEditedNote()">
+                    <span class="btn-icon">✅</span>
+                    Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

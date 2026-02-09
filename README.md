@@ -1,5 +1,26 @@
 # MGL843-tp1
 
+## 🚀 Démarrage Rapide
+
+### Interface Web (Graphique)
+
+Lancer l'interface visuelle moderne :
+
+```bash
+npm run dev:web
+```
+
+Puis ouvrez **[http://localhost:3000](http://localhost:3000)** dans votre navigateur.
+
+### Interface CLI (Terminal)
+
+Utiliser l'application en ligne de commande :
+
+```bash
+npm start -- <commande>
+# Exemple : npm start -- list
+```
+
 ## Utilisation du CLI
 
 Une application en ligne de commande (CLI) pour gérer des notes, écrit en TypeScript.
@@ -51,7 +72,62 @@ npm start -- export ./my-notes.json
 npm test
 ```
 
-## Visualisation
+## Interface Web
+
+Une interface web graphique moderne pour gérer vos notes avec une navigation intuitive.
+
+### Démarrage du serveur web
+
+#### Mode développement
+
+```bash
+npm install  # Installer les dépendances si ce n'est pas déjà fait
+npm run dev:web
+```
+
+#### Mode production
+
+```bash
+npm run build:web
+npm run start:web
+```
+
+Le serveur démarrera sur **http://localhost:3000**
+
+### Fonctionnalités de l'interface web
+
+- **📝 Créer des notes** : Interface avec formulaire pour créer des notes avec tags
+- **🔍 Rechercher** : Recherche en temps réel dans le contenu et les tags
+- **🏷️ Gestion des tags** : Ajout de tags à des notes existantes
+- **📥 Export** : Télécharger une note individuelle ou toutes les notes en JSON
+- **🗑️ Supprimer** : Suppression de notes avec confirmation
+- **✨ Design moderne** : Interface avec glassmorphism, animations fluides et design responsive
+
+### Interface CLI et Web ensemble
+
+Le CLI et l'interface web partagent le même fichier de données (`todo-app-cli.json`). Vous pouvez utiliser les deux interfaces de manière interchangeable :
+
+```bash
+# Créer une note via CLI
+npm start -- create "Note depuis le CLI" -t urgent
+
+# La note apparaîtra automatiquement sur l'interface web après un refresh
+```
+
+### Technologies utilisées
+
+**Backend:**
+
+- Express.js - Serveur web
+- TypeScript - Langage de programmation
+- CORS - Support cross-origin
+
+**Frontend:**
+
+- HTML5 - Structure sémantique
+- CSS3 - Design glassmorphism avec animations
+- JavaScript (Vanilla) - Interactions dynamiques
+- Google Fonts (Inter) - Typographie premium
 
 Script Python pour visualiser les métriques des classes exportées depuis Moose/Pharo.
 
@@ -78,7 +154,7 @@ Ce script permet de générer un graphique depuis les métriques des classes du 
 **Avez-vous déjà utilisé des outils d’IA générative pour programmer avant ce laboratoire ? Si oui, lesquels et dans quel contexte ?**
 
 - **Raphael :** Oui, et plus souvent que je ne peux le compter. Dans ma routine de développeur au travail, j’utilise régulièrement des outils d’IA générative pour accomplir mes tâches plus rapidement, mais aussi pour apprendre. Je les utilise parfois comme un professeur, notamment lorsque je souhaite comprendre rapidement un concept, plutôt que de passer par des plateformes comme Stack Overflow.
-Dans mon quotidien de développeur, j’ai eu l’occasion d’utiliser plusieurs outils, notamment Antigravity, Cursor et Windsurf. Personnellement, je les utilise principalement en mode plan, c’est-à-dire que je passe systématiquement en revue toutes les modifications proposées avant de leur permettre d’être appliquées. J’ai également exploré plus en profondeur des outils comme BMAD.  
+  Dans mon quotidien de développeur, j’ai eu l’occasion d’utiliser plusieurs outils, notamment Antigravity, Cursor et Windsurf. Personnellement, je les utilise principalement en mode plan, c’est-à-dire que je passe systématiquement en revue toutes les modifications proposées avant de leur permettre d’être appliquées. J’ai également exploré plus en profondeur des outils comme BMAD.
 - **Pamela :** Oui, j'utilise Claude avec Zed pour mes projets perso. J'ai aussi essayé Warp pour le CLI, et Windsurf au travail pendant quelques jours (accès gratuit, mais vraiment pas terrible). D'habitude je donne des tâches précises - implémenter tel endpoint, refactorer telle fonction, et je review tout ce qu'il génère. J'ai l'impression que ces modèles deviennent moins performants avec le temps - j'ai lu que certains providers réduisent la quantization pour économiser des ressources.
 - **Dorian :** Oui, utilisation quotidienne intégrée au flux de travail (via l'IDE Cursor). Utilisation pour la résolution de problèmes complexes et, lors de projets personnels, pour l'idéation d'architecture ou de pistes de développement (en utilisant des prompts de type "Agis comme un développeur Senior" pour éviter les mauvaises pratiques).
 
@@ -111,8 +187,8 @@ Contrairement à un modèle de domaine ou conceptuel qui décrit des règles mé
 **Limites de l'UML avec TypeScript :**
 Non, il n'est pas possible de tout modéliser fidèlement de TypeScript dans un diagramme de classes UML standard sans adaptations lourdes. TypeScript possède des fonctionnalités spécifiques qui n'ont pas d'équivalent direct dans la norme UML (conçue initialement pour des langages orientés objets nominaux comme Java ou C++) :
 
-1.  **Types avancés :** Les _Union Types_ (`string | number`), _Intersection Types_, et _Utility Types_ (`Partial<T>`, `Pick<T>`) sont difficiles à représenter.
-2.  **Typage structurel :** TypeScript utilise le "duck typing" (compatibilité basée sur la forme de l'objet), alors qu'UML repose généralement sur une hiérarchie explicite (nominale).
+1. **Types avancés :** Les _Union Types_ (`string | number`), _Intersection Types_, et _Utility Types_ (`Partial<T>`, `Pick<T>`) sont difficiles à représenter.
+2. **Typage structurel :** TypeScript utilise le "duck typing" (compatibilité basée sur la forme de l'objet), alors qu'UML repose généralement sur une hiérarchie explicite (nominale).
 
 ### 3.3 Partie 2 : Visualisation du projet TypeScript
 
