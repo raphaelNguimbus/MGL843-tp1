@@ -21,6 +21,7 @@ export interface Note {
     content: string;
     tags: Tag[];
     createdAt: string;
+    expirationDate?: string;
 }
 
 export interface TagDefinition {
@@ -206,7 +207,7 @@ export class NoteManager {
         fs.writeFileSync(this.filePath, JSON.stringify(notes, null, 2));
     }
 
-    public addNote(content: string, tags: string[] = []): Note {
+    public addNote(content: string, tags: string[] = [], expirationDate?: string): Note {
         const notes = this.loadNotes();
 
         // Register tags in repository and get Tag objects with colors
@@ -222,6 +223,11 @@ export class NoteManager {
             tags: tagObjects,
             createdAt: new Date().toISOString(),
         };
+
+        if (expirationDate) {
+            newNote.expirationDate = expirationDate;
+        }
+
         notes.push(newNote);
         this.saveNotes(notes);
         return newNote;
@@ -276,7 +282,7 @@ export class NoteManager {
         fs.writeFileSync(targetPath, JSON.stringify(notes, null, 2));
     }
 
-    public updateNote(id: string, content?: string, tags?: string[]): Note | null {
+    public updateNote(id: string, content?: string, tags?: string[], expirationDate?: string | null): Note | null {
         const notes = this.loadNotes();
         const note = notes.find((n) => n.id === id);
         if (!note) {
@@ -303,6 +309,16 @@ export class NoteManager {
             });
         }
 
+        // Update expiration date if provided
+        // Pass null to remove expiration date
+        if (expirationDate !== undefined) {
+            if (expirationDate === null) {
+                delete note.expirationDate;
+            } else {
+                note.expirationDate = expirationDate;
+            }
+        }
+
         this.saveNotes(notes);
         return note;
     }
@@ -325,6 +341,33 @@ export class NoteManager {
         }
         this.saveNotes(filteredNotes);
         return true;
+    }
+
+    public deleteExpiredNotes(): number {
+        const notes = this.loadNotes();
+        const now = new Date();
+        const initialLength = notes.length;
+
+        const activeNotes = notes.filter(note => {
+            if (note.expirationDate) {
+                const expiration = new Date(note.expirationDate);
+                if (expiration <= now) {
+                    // Note is expired, decrement tag usage
+                    note.tags.forEach(tag => {
+                        this.tagRepository.decrementUsage(tag.name);
+                    });
+                    return false; // Remove from list
+                }
+            }
+            return true; // Keep note
+        });
+
+        if (activeNotes.length !== initialLength) {
+            this.saveNotes(activeNotes);
+            return initialLength - activeNotes.length;
+        }
+
+        return 0;
     }
 
     public getTagRepository(): TagRepository {

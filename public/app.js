@@ -6,6 +6,7 @@ const notesContainer = document.getElementById('notesContainer');
 const emptyState = document.getElementById('emptyState');
 const createNoteForm = document.getElementById('createNoteForm');
 const noteContentInput = document.getElementById('noteContent');
+const noteExpirationInput = document.getElementById('noteExpiration');
 const searchInput = document.getElementById('searchInput');
 const exportAllBtn = document.getElementById('exportAllBtn');
 const toast = document.getElementById('toast');
@@ -419,12 +420,39 @@ function displayNotes(notes) {
         const content = note.content || '(Sans contenu)';
         const tags = Array.isArray(note.tags) ? note.tags : [];
         const createdAt = note.createdAt || null;
+        const expirationDate = note.expirationDate ? new Date(note.expirationDate) : null;
+        let expirationBadge = '';
+
+        if (expirationDate) {
+            const now = new Date();
+            const isExpired = expirationDate <= now;
+            const timeLeft = expirationDate - now;
+            const hoursLeft = timeLeft / (1000 * 60 * 60);
+
+            let badgeClass = 'badge-info';
+            let badgeText = `Expire le ${expirationDate.toLocaleString('fr-FR')}`;
+
+            if (isExpired) {
+                badgeClass = 'badge-danger';
+                badgeText = 'Expirée';
+            } else if (hoursLeft < 1) {
+                const minutesLeft = Math.ceil(timeLeft / (1000 * 60));
+                badgeClass = 'badge-warning';
+                badgeText = `Expire dans ${minutesLeft} min`;
+            } else if (hoursLeft < 24) {
+                badgeClass = 'badge-warning';
+                badgeText = `Expire dans ${Math.ceil(hoursLeft)}h`;
+            }
+
+            expirationBadge = `<span class="badge ${badgeClass}" title="${expirationDate.toLocaleString('fr-FR')}">⏰ ${badgeText}</span>`;
+        }
 
         return `
             <div class="note-card" data-id="${note.id}" onclick="openEditModal('${note.id}')">
                 <div class="note-header">
                     <div class="note-date">${formatDate(createdAt)}</div>
-                    <div class="note-id">#${note.id}</div>
+                    ${expirationBadge}
+
                     <button class="btn-icon-only btn-danger" onclick="event.stopPropagation(); deleteNote('${note.id}')" title="Supprimer">
                         🗑️
                     </button>
@@ -452,6 +480,18 @@ function openEditModal(noteId) {
     // Populate modal
     document.getElementById('modalNoteId').textContent = `#${noteId}`;
     document.getElementById('editNoteContent').value = note.content || '';
+
+    // Set expiration date input
+    const editExpirationInput = document.getElementById('editNoteExpiration');
+    if (note.expirationDate) {
+        // Format for datetime-local: YYYY-MM-DDThh:mm
+        const date = new Date(note.expirationDate);
+        // Adjust to local timezone for input
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+        editExpirationInput.value = date.toISOString().slice(0, 16);
+    } else {
+        editExpirationInput.value = '';
+    }
 
     // Initialize or reinitialize edit tag input
     if (!editTagInput) {
@@ -489,6 +529,8 @@ async function saveEditedNote() {
 
     const content = document.getElementById('editNoteContent').value.trim();
     const tags = editTagInput ? editTagInput.getTags() : [];
+    const expirationValue = document.getElementById('editNoteExpiration').value;
+    const expirationDate = expirationValue ? new Date(expirationValue).toISOString() : null;
 
     if (!content) {
         showToast('⚠️ Le contenu ne peut pas être vide', 'warning');
@@ -499,7 +541,7 @@ async function saveEditedNote() {
         const response = await fetch(`${API_URL}/notes/${currentEditingNoteId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content, tags })
+            body: JSON.stringify({ content, tags, expirationDate })
         });
 
         if (!response.ok) throw new Error('Failed to update note');
@@ -522,6 +564,8 @@ async function handleCreateNote(e) {
 
     const content = noteContentInput.value.trim();
     const tags = createTagInput.getTags();
+    const expirationValue = noteExpirationInput.value;
+    const expirationDate = expirationValue ? new Date(expirationValue).toISOString() : undefined;
 
     if (!content) {
         showToast('⚠️ Le contenu ne peut pas être vide', 'warning');
@@ -532,7 +576,7 @@ async function handleCreateNote(e) {
         const response = await fetch(`${API_URL}/notes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content, tags })
+            body: JSON.stringify({ content, tags, expirationDate })
         });
 
         if (!response.ok) throw new Error('Failed to create note');
@@ -541,6 +585,7 @@ async function handleCreateNote(e) {
         showToast('✅ Note créée avec succès!', 'success');
 
         noteContentInput.value = '';
+        noteExpirationInput.value = '';
         createTagInput.clear();
 
         await loadNotes();
@@ -739,6 +784,34 @@ style.textContent = `
     
     .btn-danger:hover {
         background: rgba(239, 68, 68, 0.1);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+    }
+
+    .badge-info {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .badge-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
     }
 `;
 document.head.appendChild(style);

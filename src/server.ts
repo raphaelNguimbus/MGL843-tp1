@@ -5,7 +5,7 @@ import { NoteManager } from './notes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const noteManager = new NoteManager('todo-app-cli.json');
+const noteManager = new NoteManager('notes_db.json');
 
 // Middleware
 app.use(cors());
@@ -27,11 +27,11 @@ app.get('/api/notes', (req: Request, res: Response) => {
 // POST /api/notes - Créer une nouvelle note
 app.post('/api/notes', (req: Request, res: Response) => {
     try {
-        const { content, tags } = req.body;
+        const { content, tags, expirationDate } = req.body;
         if (!content) {
             return res.status(400).json({ error: 'Content is required' });
         }
-        const note = noteManager.addNote(content, tags || []);
+        const note = noteManager.addNote(content, tags || [], expirationDate);
         res.status(201).json(note);
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -86,8 +86,8 @@ app.get('/api/notes/export', (req: Request, res: Response) => {
 app.put('/api/notes/:id', (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { content, tags } = req.body;
-        const note = noteManager.updateNote(id, content, tags);
+        const { content, tags, expirationDate } = req.body;
+        const note = noteManager.updateNote(id, content, tags, expirationDate);
         if (!note) {
             return res.status(404).json({ error: 'Note not found' });
         }
@@ -188,3 +188,11 @@ app.listen(PORT, () => {
     console.log(`🚀 Notes Web Server running at http://localhost:${PORT}`);
     console.log(`📝 Access the web interface at http://localhost:${PORT}`);
 });
+
+// Periodic cleanup of expired notes (every 5 seconds)
+setInterval(() => {
+    const deletedCount = noteManager.deleteExpiredNotes();
+    if (deletedCount > 0) {
+        console.log(`🧹 Deleted ${deletedCount} expired note(s)`);
+    }
+}, 5 * 1000);

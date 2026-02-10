@@ -2,19 +2,19 @@
   {
     "name": "test2",
     "color": "#2c0e71",
-    "usageCount": 1,
+    "usageCount": 0,
     "createdAt": "2026-02-09T04:33:08.370Z"
   },
   {
     "name": "test5",
     "color": "#ef4444",
-    "usageCount": 2,
+    "usageCount": 1,
     "createdAt": "2026-02-09T04:39:48.909Z"
   },
   {
     "name": "test6",
     "color": "#ec4899",
-    "usageCount": 2,
+    "usageCount": 1,
     "createdAt": "2026-02-09T04:39:55.578Z"
   },
   {
@@ -26,25 +26,25 @@
   {
     "name": "test8",
     "color": "#f97316",
-    "usageCount": 2,
+    "usageCount": 1,
     "createdAt": "2026-02-09T04:40:18.520Z"
   },
   {
     "name": "important",
     "color": "#ff2600",
-    "usageCount": 2,
+    "usageCount": 1,
     "createdAt": "2026-02-09T04:56:08.101Z"
   },
   {
     "name": "urgent",
     "color": "#00364a",
-    "usageCount": 3,
+    "usageCount": 2,
     "createdAt": "2026-02-09T05:05:53.634Z"
   },
   {
     "name": "nouveau-tag",
     "color": "#3b82f6",
-    "usageCount": 2,
+    "usageCount": 1,
     "createdAt": "2026-02-09T05:07:23.145Z"
   },
   {
@@ -58,5 +58,23 @@
     "color": "#8b5cf6",
     "usageCount": 1,
     "createdAt": "2026-02-09T23:53:31.256Z"
+  },
+  {
+    "name": "Elisabeth",
+    "color": "#0433ff",
+    "usageCount": 1,
+    "createdAt": "2026-02-09T23:56:43.038Z"
+  },
+  {
+    "name": "expiration",
+    "color": "#3b82f6",
+    "usageCount": 0,
+    "createdAt": "2026-02-10T00:10:56.218Z"
+  },
+  {
+    "name": "work",
+    "color": "#10b981",
+    "usageCount": 0,
+    "createdAt": "2026-02-10T00:35:03.057Z"
   }
 ]

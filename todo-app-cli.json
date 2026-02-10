@@ -9567,69 +9567,15 @@
     "tags": []
   },
   {
-    "id": "1770570800007",
-    "content": "Raphael tu dois etre plus discipliné",
-    "tags": [
-      {
-        "name": "work",
-        "color": "#8b5cf6"
-      }
-    ],
-    "createdAt": "2026-02-08T17:13:20.007Z"
-  },
-  {
     "id": "1770608535202",
     "content": "Elisabeth",
-    "tags": [],
+    "tags": [
+      {
+        "name": "Elisabeth",
+        "color": "#0433ff"
+      }
+    ],
     "createdAt": "2026-02-09T03:42:15.202Z"
-  },
-  {
-    "id": "1770610134794",
-    "content": "Je dois aller faire une inspection de voiture demain pour uber",
-    "tags": [],
-    "createdAt": "2026-02-09T04:08:54.794Z"
-  },
-  {
-    "id": "1770611086395",
-    "content": "Test note with tags\no;efvfkvkfevmlkfmvlefkmvlekmvlekmver",
-    "tags": [
-      {
-        "name": "urgent",
-        "color": "#00364a"
-      },
-      {
-        "name": "test5",
-        "color": "#ef4444"
-      },
-      {
-        "name": "test6",
-        "color": "#ec4899"
-      },
-      {
-        "name": "test8",
-        "color": "#f97316"
-      }
-    ],
-    "createdAt": "2026-02-09T04:24:46.425Z"
-  },
-  {
-    "id": "1770611588372",
-    "content": "hello updated - modified in modal",
-    "tags": [
-      {
-        "name": "test2",
-        "color": "#2c0e71"
-      },
-      {
-        "name": "important",
-        "color": "#6366f1"
-      },
-      {
-        "name": "nouveau-tag",
-        "color": "#3b82f6"
-      }
-    ],
-    "createdAt": "2026-02-09T04:33:08.372Z"
   },
   {
     "id": "1770680547965",

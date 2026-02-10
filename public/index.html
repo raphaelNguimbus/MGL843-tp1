@@ -40,6 +40,10 @@
                             required></textarea>
                     </div>
                     <div class="form-group">
+                        <label for="noteExpiration">Expiration (optionnel)</label>
+                        <input type="datetime-local" id="noteExpiration" class="form-control">
+                    </div>
+                    <div class="form-group">
                         <label for="noteTags">Tags</label>
                         <div class="tag-input-container">
                             <div class="tag-pills" id="selectedTags"></div>
@@ -114,6 +118,10 @@
                 <div class="form-group">
                     <label for="editNoteContent">Contenu</label>
                     <textarea id="editNoteContent" class="form-control" rows="6" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editNoteExpiration">Expiration (optionnel)</label>
+                    <input type="datetime-local" id="editNoteExpiration" class="form-control">
                 </div>
                 <div class="form-group">
                     <label for="editNoteTags">Tags</label>
