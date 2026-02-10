@@ -7,6 +7,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const noteManager = new NoteManager('notes_db.json');
 
+// Sync tag usage counts on startup to ensure consistency
+const notes = noteManager.listNotes();
+noteManager.getTagRepository().recalculateUsageCounts(notes);
+console.log('🔄 Tag usage counts synchronized with notes database');
+
 // Middleware
 app.use(cors());
 app.use(express.json());

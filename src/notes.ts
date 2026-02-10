@@ -204,6 +204,8 @@ export class NoteManager {
     }
 
     private saveNotes(notes: Note[]): void {
+        // Recalculate tag usage counts to ensure consistency
+        this.tagRepository.recalculateUsageCounts(notes);
         fs.writeFileSync(this.filePath, JSON.stringify(notes, null, 2));
     }
 
