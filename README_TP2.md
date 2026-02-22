@@ -78,13 +78,15 @@ WMC et TCC sont disponibles nativement dans Moose via weightedMethodCount et tig
 
 **Quelles sont les éléments (classes, modules, méthodes, fonctions, etc.) remarquables dans le projet ? Comment les avez-vous identifiées ?**
 
-L'analyse des métriques extraites de Moose et visualisées avec Roassal et Python a permis d'identifier plusieurs éléments remarquables.
+L'analyse des métriques extraites de Moose et visualisées avec Roassal (Pharo) et Python (Matplotlib) a permis d'identifier plusieurs éléments remarquables.
 
-La classe NoteManager reste la plus complexe du projet avec SLOC=158, WMC=17, CBO_out=65 et RFC=11. Elle était déjà la classe dominante en TP1 avec 8 méthodes ; en TP2, elle en compte 11 pour supporter l'expiration et l'interface web. Elle apparaît clairement dans la zone à risque du graphique de dispersion WMC vs CBO.
+La classe NoteManager a été identifiée comme la plus complexe et la plus couplée du projet. Elle se démarque dans le graphique SLOC avec 158 lignes, dans le graphique WMC avec une valeur de 17, et dans le graphique CBO avec un couplage sortant de 65 — le plus élevé de toutes les classes. Elle apparaît également dans la zone à risque en haut à droite du graphique de dispersion WMC vs CBO. Son RFC de 11 confirme une complexité de test élevée. Elle était déjà la classe dominante en TP1 avec 8 méthodes ; en TP2, elle en compte 11, ce qui accentue tous ses indicateurs.
 
-La classe `TagRepository`, introduite en TP2, présente malgré une bonne intention architecturale une complexité sous-estimée : WMC=20 (le plus élevé de toutes les classes), SLOC=132, RFC=12, et surtout TCC=0.045 — une cohésion interne très faible qui indique que ses méthodes partagent peu d'attributs entre elles.
+La classe TagRepository, introduite en TP2, a été repérée grâce au graphique WMC où elle affiche la valeur la plus élevée de toutes les classes avec 20, malgré un SLOC de 132. C'est surtout le graphique TCC qui la distingue : avec un score de 0.045, sa cohésion interne est très faible, ce qui indique que ses 12 méthodes partagent peu d'attributs entre elles. Son RFC de 12 en fait également la classe la plus difficile à tester.
 
-La classe `NotesCLI` présente une complexité cachée : WMC=1 en apparence, mais sa méthode `configure` fait 72 lignes et délègue la logique à des arrow functions imbriquées dont la complexité cyclomatique n'est pas remontée au niveau de la classe. À l'inverse, la classe `Tag` est un exemple de classe saine avec SLOC=14, WMC=1, CBO_out=0 et RFC=3 — aucun risque de conception.
+La classe NotesCLI présente une complexité cachée que les métriques révèlent partiellement. Son WMC affiche 1, ce qui semble indiquer une classe simple, mais sa méthode configure compte 72 lignes et délègue la logique à des arrow functions imbriquées dont la complexité cyclomatique n'est pas comptabilisée au niveau de la classe. Son CBO sortant de 46 est par ailleurs très élevé pour seulement 3 méthodes. Le TCC affiche une valeur de 1.333 — anormalement supérieure à 1 — mais cette valeur ne reflète pas un problème réel : il s'agit d'un artefact de mesure causé par les accesseurs qui biaisent le calcul, et non le signe d'une mauvaise conception.
+
+La classe Tag a été identifiée comme un exemple de classe saine grâce à ses métriques toutes au minimum : SLOC=14, WMC=1, CBO_out=0 et RFC=3. Elle se positionne en bas à gauche du graphique de dispersion, loin de toute zone à risque.
 
 **Expliquez le rôle de ces éléments dans le projet. Pourquoi sont-ils importants ?**
 
