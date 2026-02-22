@@ -68,11 +68,20 @@ Certaines métriques ont été exclues délibérément : NOC et DIT sont uniform
 
 Une métrique n'était pas disponible directement dans le modèle Famix et a nécessité un calcul supplémentaire dans Pharo.
 
-RFC a été calculé en additionnant le nombre de méthodes propres à la classe et le nombre d'invocations sortantes — c'est-à-dire les méthodes externes appelées depuis la classe :
+RFC a été calculé en additionnant le nombre de méthodes propres à la classe et le nombre de méthodes externes distinctes appelées depuis la classe. La définition stricte de Chidamber & Kemerer exige une déduplication — si une même méthode externe est appelée plusieurs fois, elle ne compte qu'une seule fois. Nous avons donc utilisé la formule suivante :
+
+```smalltalk
+distinctCalledMethods := (c outgoingInvocations collect: [:i | i candidates]) flatten asSet.
+rfc := c methods size + distinctCalledMethods size.
+```
+
+Nous avons également vérifié que la formule simplifiée sans déduplication donnait les mêmes résultats sur notre projet :
 
 ```smalltalk
 rfc := c methods size + c outgoingInvocations size.
 ```
+
+Les deux formules produisent des valeurs identiques pour toutes les classes, ce qui confirme que chaque méthode externe n'est appelée qu'une seule fois par classe dans ce projet. Les valeurs RFC rapportées sont donc exactes au sens de la définition CK.
 
 WMC et TCC sont disponibles nativement dans Moose via weightedMethodCount et tightClassCohesion respectivement — aucun calcul supplémentaire n'était nécessaire. L'ensemble des métriques a ensuite été exporté dans `notes-cli-classes-tp2.csv` et visualisé avec Python (Matplotlib).
 
