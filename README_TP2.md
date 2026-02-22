@@ -97,15 +97,15 @@ Ces éléments ont été identifiés en croisant les métriques principales (SLO
 
 **Expliquez le rôle de ces éléments dans le projet. Pourquoi sont-ils importants ?**
 
-La classe Tag est la brique de base du système — sans elle, aucune note ne peut être étiquetée. Sa simplicité est volontaire et importante : elle n'a aucune dépendance, ce qui la rend facilement réutilisable partout.
+La classe Tag représente une étiquette avec un nom et une couleur. Son rôle est d'être le modèle de données partagé entre toutes les autres classes. Elle est importante parce qu'elle est la seule classe sans dépendance — ce qui la rend stable et réutilisable partout dans le système.
 
-NoteManager est l'élément le plus critique du projet. Toute opération sur les notes passe par elle, ce qui en fait un point de défaillance potentiel si elle devient trop complexe ou mal conçue — ce qui est d'ailleurs le cas, comme on le verra en Q5.
+NoteManager gère le cycle de vie complet des notes : création, modification, suppression, recherche et expiration. C'est la classe la plus importante du projet parce que toute opération passe par elle — si elle est mal conçue, tout le système en souffre.
 
-TagRepository a été introduite en TP2 précisément pour alléger NoteManager. Son rôle est de centraliser tout ce qui concerne les tags — couleurs, compteurs d'usage, persistance — de façon indépendante. Sans elle, NoteManager aurait continué à grossir.
+TagRepository gère les tags de façon indépendante : création, couleurs, compteurs d'usage et persistance dans tags.json. Elle a été introduite en TP2 pour retirer cette responsabilité de NoteManager, ce qui est important pour éviter que NoteManager devienne une God Class.
 
-NotesCLI et server.ts sont les deux points d'entrée du système, l'un pour le terminal et l'autre pour le web. Ils sont importants parce qu'ils définissent comment l'utilisateur interagit avec l'application — tout changement dans l'interface passe par eux.
+NotesCLI configure les commandes du terminal via commander et délègue à NoteManager. server.ts expose l'API REST et démarre le planificateur de suppression des notes expirées. Ces deux modules sont importants parce qu'ils sont les seuls points d'entrée du système — l'un pour le CLI, l'autre pour le web.
 
-Enfin, public/app.js est ce que l'utilisateur voit et touche directement. Sa qualité impacte directement l'expérience utilisateur, indépendamment de la qualité du backend.
+Enfin, public/app.js gère les interactions utilisateur, les appels à l'API et la mise à jour de l'interface. C'est l'unique point de contact entre l'utilisateur web et le reste du système, ce qui le rend critique pour l'expérience utilisateur.
 
 **Commentez sur la qualité de la conception du projet. Y a-t-il des éléments qui semblent mal conçus ?
 Pourquoi ?**
