@@ -36,10 +36,13 @@ Puis ouvrez **[http://localhost:3000](http://localhost:3000)** dans votre naviga
 
 **Quelles sont les exigences que vous avez ajoutées ? Justifiez brièvement chaque exigence.**
 
-Convivialité - Afin d'ajouter des fonctionnalitées à l'application CLI de base nous avons décidé d'ajouter une interface web graphique moderne pour permettre aux utilisateurs de gérer leurs notes de manière plus intuitive et visuelle. 
+<!-- NOTE: "Convivialité" c'est une qualité pas une exigence — à reformuler en quelque chose de mesurable, genre "Le système doit offrir une interface web permettant de créer, modifier, supprimer et rechercher des notes." -->
+Convivialité - Afin d'ajouter des fonctionnalitées à l'application CLI de base nous avons décidé d'ajouter une interface web graphique moderne pour permettre aux utilisateurs de gérer leurs notes de manière plus intuitive et visuelle.
 
+<!-- NOTE: "supprimée ou archivée" — dans le code c'est seulement supprimée, il n'y a pas d'archivage. À corriger. -->
 Aussi nous avons ajouté une notion d'expiration pour les notes, permettant aux utilisateurs de définir une date d'expiration pour chaque note, après laquelle la note sera automatiquement supprimée ou archivée.
 
+<!-- NOTE: "récurance" → "récurrence". Et cette fonctionnalité n'a pas été implémentée — à supprimer ou mentionner clairement que c'était prévu mais pas livré. -->
 Pour appuyer notre concept d'expiration, nous avons ajouter de la récurance pour les notes, permettant aux utilisateurs de créer des notes qui se répètent à des intervalles réguliers (quotidien, hebdomadaire, mensuel).
 
 **Comment les exigences ajoutées augmentent-elles la complexité du projet ? Expliquez en quoi elles
@@ -50,7 +53,7 @@ Convivialité - L'ajout d'une interface web graphique moderne augmente la comple
 
 Réutilisabilité - Le backend se base sur la même classe que celle développée et utilisée pour le CLI, ce qui nous a permis de réutiliser une grande partie du code existant pour gérer les notes, les tags, et les opérations CRUD. Cependant, nous avons dû adapter certaines parties du code pour permettre une utilisation à la fois via le CLI et l'interface web, ce qui a introduit une certaine complexité en termes de gestion des différentes interfaces utilisateur.
 
-Précision - L'ajout de la notion d'expiration et de récurrence pour les notes ajoute une complexité supplémentaire en termes de gestion des données et de logique métier. Nous avons dû implémenter des mécanismes pour vérifier régulièrement les notes expirées, gérer les notes récurrentes, et assurer que les opérations sur les notes prennent en compte ces nouvelles fonctionnalités. Cela a nécessité une réflexion approfondie sur la structure des données et la logique de l'application pour garantir que toutes les fonctionnalités fonctionnent correctement ensemble.
+Précision - L'ajout de la notion d'expiration pour les notes ajoute une complexité supplémentaire en termes de gestion des données et de logique métier. Nous avons dû implémenter des mécanismes pour vérifier régulièrement les notes expirées et assurer que les opérations sur les notes prennent en compte cette fonctionnalité. Une fonctionnalité de récurrence avait été envisagée, mais elle n'a pas été implémentée dans la version actuelle. Cela a nécessité une réflexion approfondie sur la structure des données et la logique de l'application pour garantir que toutes les fonctionnalités fonctionnent correctement ensemble.
 
 ### 3.2 Visualiser les métriques du projet TypeScript
 
