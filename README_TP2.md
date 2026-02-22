@@ -71,23 +71,7 @@ Une métrique n'était pas disponible directement dans le modèle Famix et a né
 RFC a été calculé en additionnant le nombre de méthodes propres à la classe et le nombre d'invocations sortantes — c'est-à-dire les méthodes externes appelées depuis la classe :
 
 ```smalltalk
-| model rows |
-model := MooseModel root first.
-
-rows := model allModelClasses collect: [:c |
-    | rfc row |
-    rfc := c methods size + c outgoingInvocations size.
-    row := OrderedCollection new.
-    row add: c name.
-    row add: c numberOfLinesOfCode.
-    row add: c methods size.
-    row add: c weightedMethodCount.
-    row add: c allClients size.
-    row add: c allProviders size.
-    row add: rfc.
-    row
-].
-rows
+rfc := c methods size + c outgoingInvocations size.
 ```
 
 WMC et TCC sont disponibles nativement dans Moose via weightedMethodCount et tightClassCohesion respectivement — aucun calcul supplémentaire n'était nécessaire. L'ensemble des métriques a ensuite été exporté dans `notes-cli-classes-tp2.csv` et visualisé avec Python (Matplotlib).
