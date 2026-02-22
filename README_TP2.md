@@ -68,24 +68,18 @@ Nous avons volontairement exclu certaines métriques comme NOC et DIT, puisque l
 
 **Si vous avez dû calculer des métriques supplémentaires, expliquez comment vous les avez calculées.**
 
-Une métrique n'était pas disponible directement dans le modèle Famix et a nécessité un calcul supplémentaire dans Pharo.
+Une seule métrique n'était pas directement disponible dans le modèle Famix : le RFC. Nous avons donc dû la calculer manuellement dans Pharo.
 
-RFC a été calculé en additionnant le nombre de méthodes propres à la classe et le nombre de méthodes externes distinctes appelées depuis la classe. La définition stricte de Chidamber & Kemerer exige une déduplication — si une même méthode externe est appelée plusieurs fois, elle ne compte qu'une seule fois. Nous avons donc utilisé la formule suivante :
+Conformément à la définition CK, nous avons additionné le nombre de méthodes propres à la classe et le nombre de méthodes externes distinctes qu'elle appelle. Nous avons pris soin de dédupliquer les méthodes appelées afin d'éviter de compter plusieurs fois la même dépendance.
 
 ```smalltalk
 distinctCalledMethods := (c outgoingInvocations collect: [:i | i candidates]) flatten asSet.
 rfc := c methods size + distinctCalledMethods size.
 ```
 
-Nous avons également vérifié que la formule simplifiée sans déduplication donnait les mêmes résultats sur notre projet :
+Nous avons également vérifié qu'une version simplifiée (sans déduplication explicite) produisait les mêmes résultats sur notre projet, ce qui montre qu'aucune méthode externe n'est appelée plusieurs fois dans une même classe. Les valeurs de RFC obtenues sont donc cohérentes avec la définition théorique.
 
-```smalltalk
-rfc := c methods size + c outgoingInvocations size.
-```
-
-Les deux formules produisent des valeurs identiques pour toutes les classes, ce qui confirme que chaque méthode externe n'est appelée qu'une seule fois par classe dans ce projet. Les valeurs RFC rapportées sont donc exactes au sens de la définition CK.
-
-WMC et TCC sont disponibles nativement dans Moose via weightedMethodCount et tightClassCohesion respectivement — aucun calcul supplémentaire n'était nécessaire. L'ensemble des métriques a ensuite été exporté dans `notes-cli-classes-tp2.csv` et visualisé avec Python (Matplotlib).
+Les métriques WMC et TCC étaient disponibles directement dans Moose (weightedMethodCount et tightClassCohesion), donc aucun calcul supplémentaire n'a été nécessaire. L'ensemble des résultats a ensuite été exporté en CSV et visualisé avec Python (Matplotlib).
 
 **Quelles sont les éléments (classes, modules, méthodes, fonctions, etc.) remarquables dans le projet ? Comment les avez-vous identifiées ?**
 
