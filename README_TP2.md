@@ -58,11 +58,13 @@ Précision - L'ajout de la notion d'expiration et de récurrence pour les notes 
 **Expliquez les métriques que vous avez choisies. Pourquoi sont-elles importantes pour évaluer la
 qualité de la conception ?**
 
-Nous avons retenu cinq métriques, toutes extractables statiquement depuis le modèle Famix sans exécuter le code.
+Pour évaluer la qualité de la conception, nous avons choisi cinq métriques statiques extraites du modèle Famix généré par ts2famix, sans exécuter le code. L'objectif était d'analyser la taille, la complexité, le couplage et la cohésion des classes, qui sont des indicateurs classiques de qualité de conception.
 
-Le SLOC nous donne une idée de la taille de chaque classe — plus une classe est grande, plus elle est susceptible de contenir des défauts. Le WMC mesure la complexité globale d'une classe en sommant la complexité cyclomatique de chacune de ses méthodes ; dans Moose, il est calculé via weightedMethodCount, ce qui signifie qu'une méthode simple compte moins qu'une méthode avec plusieurs branches. Le CBO mesure le couplage entre classes — une classe très couplée est difficile à modifier sans casser autre chose, ce qui va à l'encontre du principe de Faible Couplage (GRASP). Le RFC estime combien de méthodes peuvent être déclenchées en réponse à un message, ce qui donne une idée de la complexité des tests à écrire. Enfin, le TCC mesure à quel point les méthodes d'une classe partagent les mêmes attributs — une cohésion faible suggère que la classe fait trop de choses à la fois, ce que GRASP appelle une violation de Forte Cohésion. Nous avons préféré TCC à LCOM car LCOM est connu pour donner des résultats biaisés en présence d'accesseurs.
+Le SLOC permet d'avoir une première idée de la taille des classes : plus une classe est volumineuse, plus elle risque d'être difficile à comprendre et à maintenir. Le WMC mesure la complexité interne d'une classe à travers la complexité cyclomatique de ses méthodes ; une valeur élevée indique généralement une classe plus difficile à tester et à faire évoluer.
 
-Nous avons exclu NOC et DIT car le projet n'utilise pas d'héritage — ces métriques auraient toutes été à 0. Les métriques dynamiques comme la couverture de tests ou le temps de réponse sont hors portée d'une analyse statique avec Moose.
+Le CBO évalue le niveau de dépendance entre classes : un couplage fort signifie qu'une modification peut avoir des effets de bord ailleurs dans le système. Le RFC donne une estimation du nombre de méthodes potentiellement exécutées en réponse à un appel, ce qui impacte directement la complexité des tests. Enfin, le TCC mesure la cohésion interne d'une classe, c'est-à-dire dans quelle mesure ses méthodes travaillent sur les mêmes données — un indicateur important pour juger si une classe respecte le principe de Responsabilité Unique.
+
+Nous avons volontairement exclu certaines métriques comme NOC et DIT, puisque le projet n'utilise pas l'héritage. Les métriques dynamiques (couverture de tests, performance, etc.) n'ont pas été considérées car elles dépassent le cadre d'une analyse statique avec Moose.
 
 **Si vous avez dû calculer des métriques supplémentaires, expliquez comment vous les avez calculées.**
 
