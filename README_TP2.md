@@ -39,10 +39,10 @@ Puis ouvrez **[http://localhost:3000](http://localhost:3000)** dans votre naviga
 <!-- NOTE: "Convivialité" c'est une qualité pas une exigence — à reformuler en quelque chose de mesurable, genre "Le système doit offrir une interface web permettant de créer, modifier, supprimer et rechercher des notes." -->
 Convivialité - Afin d'ajouter des fonctionnalitées à l'application CLI de base nous avons décidé d'ajouter une interface web graphique moderne pour permettre aux utilisateurs de gérer leurs notes de manière plus intuitive et visuelle.
 
-<!-- NOTE: "supprimée ou archivée" — dans le code c'est seulement supprimée, il n'y a pas d'archivage. À corriger. -->
+<!-- NOTE: "supprimée ou archivée" — dans le code c'est seulement supprimée, il n'y a pas archive. À corriger. -->
 Aussi nous avons ajouté une notion d'expiration pour les notes, permettant aux utilisateurs de définir une date d'expiration pour chaque note, après laquelle la note sera automatiquement supprimée ou archivée.
 
-<!-- NOTE: "récurance" → "récurrence". Et cette fonctionnalité n'a pas été implémentée — à supprimer ou mentionner clairement que c'était prévu mais pas livré. -->
+<!-- NOTE: "récurrence". Cette fonctionnalité n'a pas été implémentée — à supprimer ou mentionner clairement que c'était prévu mais pas livré. -->
 Pour appuyer notre concept d'expiration, nous avons ajouter de la récurance pour les notes, permettant aux utilisateurs de créer des notes qui se répètent à des intervalles réguliers (quotidien, hebdomadaire, mensuel).
 
 **Comment les exigences ajoutées augmentent-elles la complexité du projet ? Expliquez en quoi elles
