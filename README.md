@@ -142,10 +142,13 @@ Script Python pour visualiser les métriques des classes exportées depuis Moose
 ```bash
 cd visualization
 uv sync
-uv run python visualize_metrics.py
+uv run python visualize_metrics.py       # TP1 — 3 classes, graphique en barres
+uv run python visualize_metrics_tp2.py   # TP2 — 4 classes, 6 graphiques (SLOC, WMC, CBO, RFC, TCC, dispersion)
 ```
 
-Ce script permet de générer un graphique depuis les métriques des classes du projet TypeScript en lisant les données exportées au format CSV (`notes-cli-classes.csv`) depuis Moose/Pharo. Et générer un graphique en barres (`visualization/fig4-metrics-chart.png`)
+Ces scripts génèrent des graphiques à partir des métriques de classes exportées en CSV depuis Moose/Pharo :
+- `notes-cli-classes.csv` → TP1 (3 classes) → `fig4-metrics-chart.png`
+- `notes-cli-classes-tp2.csv` → TP2 (4 classes) → `fig-tp2-sloc.png`, `fig-tp2-wmc.png`, `fig-tp2-cbo.png`, `fig-tp2-rfc.png`, `fig-tp2-tcc.png`, `fig-tp2-scatter.png`
 
 ## Travail à réaliser
 
@@ -229,7 +232,7 @@ Lien du dépot: [URL](https://github.com/ebirdyx/mgl843-TP1-Pharo/tree/master)
 
 #### Données exportées
 
-Le fichier exporté est `notes-cli-classes.csv` (voir `fig4-csv-export.png`).
+Les fichiers exportés sont `notes-cli-classes.csv` (TP1, voir `fig4-csv-export.png`) et `notes-cli-classes-tp2.csv` (TP2).
 
 **Lien du dépôt GitHub:** https://github.com/raphaelNguimbus/MGL843-tp1
 
@@ -237,4 +240,4 @@ Le fichier exporté est `notes-cli-classes.csv` (voir `fig4-csv-export.png`).
 
 On a utilisé **Python** avec Pandas et Matplotlib pour visualiser les données du CSV.
 
-Le script `visualization/visualize_metrics.py` lit le fichier CSV et génère un graphique en barres groupées montrant le nombre de méthodes et d'attributs par classe. Voir `fig6-metrics-chart.png` pour le résultat.
+Le script `visualization/visualize_metrics_tp2.py` lit le fichier `notes-cli-classes-tp2.csv` et génère 6 graphiques (SLOC, WMC, CBO, RFC, TCC, dispersion) pour les 4 classes du projet TP2.
