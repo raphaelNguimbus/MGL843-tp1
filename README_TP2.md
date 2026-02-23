@@ -1,14 +1,12 @@
 # MGL843-tp2
 
-### Interface Web (Graphique)
+### Interface Web
 
-Lancer l'interface visuelle moderne :
+Lancer l'interface visuelle :
 
 ```bash
 npm run dev:web
 ```
-
-Puis ouvrez **[http://localhost:3000](http://localhost:3000)** dans votre navigateur.
 
 ### Fonctionnalités de l'interface web
 
@@ -19,37 +17,23 @@ Puis ouvrez **[http://localhost:3000](http://localhost:3000)** dans votre naviga
 - **🗑️ Supprimer** : Suppression de notes avec confirmation
 - **✨ Design moderne** : Interface avec glassmorphism, animations fluides et design responsive
 
-### Technologies utilisées
-
-**Backend:**
-
-- Express.js - Serveur web
-- TypeScript - Langage de programmation
-
-**Frontend:**
-
-- HTML5 - Structure sémantique
-- CSS3 - Design avec animations
-
 
 ### 3.1 Ajouter des exigences au projet TypeScript
 
 **Quelles sont les exigences que vous avez ajoutées ? Justifiez brièvement chaque exigence.**
 
-<!-- NOTE: "Convivialité" c'est une qualité pas une exigence — à reformuler en quelque chose de mesurable, genre "Le système doit offrir une interface web permettant de créer, modifier, supprimer et rechercher des notes." -->
-Convivialité - Afin d'ajouter des fonctionnalitées à l'application CLI de base nous avons décidé d'ajouter une interface web graphique moderne pour permettre aux utilisateurs de gérer leurs notes de manière plus intuitive et visuelle.
+- Ergonomie et Utilisabilité (Interface Web) : Pour augmenter l'accessibilité de l'outil, nous avons transposé l'ensemble des fonctionnalités initialement prévues en ligne de commande (CLI) vers une interface utilisateur (UI). Ce passage au web permet une gestion visuelle plus intuitive des tâches et une adoption plus rapide pour les utilisateurs finaux.
 
-<!-- NOTE: "supprimée ou archivée" — dans le code c'est seulement supprimée, il n'y a pas archive. À corriger. -->
-Aussi nous avons ajouté une notion d'expiration pour les notes, permettant aux utilisateurs de définir une date d'expiration pour chaque note, après laquelle la note sera automatiquement supprimée ou archivée.
+- Robustesse et Évolutivité (Architecture Backend) : Afin de garantir la solidité du système, nous avons intégré une couche Backend. Cette architecture assure une séparation nette entre la logique métier et l'affichage (Frontend), facilitant ainsi l'intégration future d'une base de données persistante et garantissant une meilleure intégrité des données lors des échanges.
 
-<!-- NOTE: "récurrence". Cette fonctionnalité n'a pas été implémentée — à supprimer ou mentionner clairement que c'était prévu mais pas livré. -->
-Pour appuyer notre concept d'expiration, nous avons ajouter de la récurance pour les notes, permettant aux utilisateurs de créer des notes qui se répètent à des intervalles réguliers (quotidien, hebdomadaire, mensuel).
+- Gestion de l'Éphémérité (Date d'expiration) : Nous avons introduit la notion de cycle de vie des notes. Les utilisateurs peuvent désormais définir une date d'expiration pour chaque entrée, déclenchant une suppression automatique après échéance. Cela permet de maintenir une liste de tâches propre et pertinente sans intervention manuelle constante.
 
-**Comment les exigences ajoutées augmentent-elles la complexité du projet ? Expliquez en quoi elles
-affectent la conception du projet par rapport aux exigences initiales (TP1).**
+> Planification de la Récurrence (Note sur le périmètre) : Dans l'optique d'automatiser la gestion des tâches répétitives, l'exigence de récurrence (quotidienne, hebdomadaire, mensuelle) avait été identifiée comme une extension naturelle du concept d'expiration. Cependant, suite aux contraintes de temps liées, cette fonctionnalité n'a pas été implémentée dans la version actuelle.
+
+**Comment les exigences ajoutées augmentent-elles la complexité du projet ? Expliquez en quoi elles affectent la conception du projet par rapport aux exigences initiales (TP1).**
 
 
-Convivialité - L'ajout d'une interface web graphique moderne augmente la complexité du projet en introduisant une nouvelle couche de présentation qui nécessite la gestion de l'état, des interactions utilisateur, et de la communication entre le frontend et le backend. Cela nécessite également l'utilisation de technologies supplémentaires telles que HTML et CSS pour créer une expérience utilisateur fluide et attrayante. De plus nous avons dû implémenter une API REST pour permettre au frontend de communiquer avec le backend, ce qui ajoute une complexité supplémentaire en termes de gestion des routes, de validation des données, et de sécurité.
+Utilisabilté - L'ajout d'une interface web graphique moderne augmente la complexité du projet en introduisant une nouvelle couche de présentation qui nécessite la gestion de l'état, des interactions utilisateur. Cela nécessite également l'utilisation de technologies supplémentaires telles que HTML et CSS pour créer une expérience utilisateur fluide et attrayante. De plus nous avons dû implémenter une API REST pour permettre au frontend de communiquer avec le backend, ce qui ajoute une complexité supplémentaire en termes de gestion des routes, de validation des données, et de sécurité.
 
 Réutilisabilité - Le backend se base sur la même classe que celle développée et utilisée pour le CLI, ce qui nous a permis de réutiliser une grande partie du code existant pour gérer les notes, les tags, et les opérations CRUD. Cependant, nous avons dû adapter certaines parties du code pour permettre une utilisation à la fois via le CLI et l'interface web, ce qui a introduit une certaine complexité en termes de gestion des différentes interfaces utilisateur.
 
@@ -58,14 +42,15 @@ Précision - L'ajout de la notion d'expiration pour les notes ajoute une complex
 ### 3.2 Visualiser les métriques du projet TypeScript
 
 
-**Expliquez les métriques que vous avez choisies. Pourquoi sont-elles importantes pour évaluer la
-qualité de la conception ?**
+**Expliquez les métriques que vous avez choisies. Pourquoi sont-elles importantes pour évaluer la qualité de la conception ?**
 
 Pour évaluer la qualité de la conception, nous avons choisi cinq métriques statiques extraites du modèle Famix généré par ts2famix, sans exécuter le code. L'objectif était d'analyser la taille, la complexité, le couplage et la cohésion des classes, qui sont des indicateurs classiques de qualité de conception.
 
-Le SLOC permet d'avoir une première idée de la taille des classes : plus une classe est volumineuse, plus elle risque d'être difficile à comprendre et à maintenir. Le WMC mesure la complexité interne d'une classe à travers la complexité cyclomatique de ses méthodes ; une valeur élevée indique généralement une classe plus difficile à tester et à faire évoluer.
-
-Le CBO évalue le niveau de dépendance entre classes : un couplage fort signifie qu'une modification peut avoir des effets de bord ailleurs dans le système. Le RFC donne une estimation du nombre de méthodes potentiellement exécutées en réponse à un appel, ce qui impacte directement la complexité des tests. Enfin, le TCC mesure la cohésion interne d'une classe, c'est-à-dire dans quelle mesure ses méthodes travaillent sur les mêmes données — un indicateur important pour juger si une classe respecte le principe de Responsabilité Unique.
+- Le SLOC permet d'avoir une première idée de la taille des classes : plus une classe est volumineuse, plus elle risque d'être difficile à comprendre et à maintenir.
+- Le WMC mesure la complexité interne d'une classe à travers la complexité cyclomatique de ses méthodes ; une valeur élevée indique généralement une classe plus difficile à tester et à faire évoluer.
+- Le CBO évalue le niveau de dépendance entre classes : un couplage fort signifie qu'une modification peut avoir des effets de bord ailleurs dans le système. 
+- Le RFC donne une estimation du nombre de méthodes potentiellement exécutées en réponse à un appel, ce qui impacte directement la complexité des tests. 
+- Le TCC mesure la cohésion interne d'une classe, c'est-à-dire dans quelle mesure ses méthodes travaillent sur les mêmes données — un indicateur important pour juger si une classe respecte le principe de Responsabilité Unique.
 
 Nous avons volontairement exclu certaines métriques comme NOC et DIT, puisque le projet n'utilise pas l'héritage. Les métriques dynamiques (couverture de tests, performance, etc.) n'ont pas été considérées car elles dépassent le cadre d'une analyse statique avec Moose.
 
@@ -110,8 +95,7 @@ NotesCLI configure les commandes du terminal via commander et délègue à NoteM
 
 Enfin, public/app.js gère les interactions utilisateur, les appels à l’API et la mise à jour de l’interface. Il représente le point de contact direct avec l’utilisateur web, ce qui en fait un élément déterminant pour l’expérience utilisateur.
 
-**Commentez sur la qualité de la conception du projet. Y a-t-il des éléments qui semblent mal conçus ?
-Pourquoi ?**
+**Commentez sur la qualité de la conception du projet. Y a-t-il des éléments qui semblent mal conçus ? Pourquoi ?**
 
 Bien que l'HTML reste simple, si celui-ci vient à être plus complexe, il serait nécessaire d'utiliser un framework de frontend tel que React ou Vue.js pour gérer l'état de l'application et les interactions utilisateur de manière plus efficace. De plus, l'utilisation d'un framework permettrait de mieux structurer le code frontend et de faciliter la maintenance à long terme.
 
