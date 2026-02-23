@@ -16,6 +16,10 @@ npm run dev:web
 - **📥 Export** : Télécharger une note individuelle ou toutes les notes en JSON
 - **🗑️ Supprimer** : Suppression de notes avec confirmation
 - **✨ Design moderne** : Interface avec glassmorphism, animations fluides et design responsive
+- 
+### Ressource
+
+Image Pharo pour le TP2: https://github.com/ebirdyx/mgl843-TP1-Pharo/tree/tp2
 
 
 ### 3.1 Ajouter des exigences au projet TypeScript
@@ -41,16 +45,26 @@ Précision - L'ajout de la notion d'expiration pour les notes ajoute une complex
 
 ### 3.2 Visualiser les métriques du projet TypeScript
 
+Il est possible de voir l'ensemble des métriques grâce au script python `visualization/visualize_metrics_tp2.py`
+
+
+
+
 
 **Expliquez les métriques que vous avez choisies. Pourquoi sont-elles importantes pour évaluer la qualité de la conception ?**
 
 Pour évaluer la qualité de la conception, nous avons choisi cinq métriques statiques extraites du modèle Famix généré par ts2famix, sans exécuter le code. L'objectif était d'analyser la taille, la complexité, le couplage et la cohésion des classes, qui sont des indicateurs classiques de qualité de conception.
 
 - Le SLOC permet d'avoir une première idée de la taille des classes : plus une classe est volumineuse, plus elle risque d'être difficile à comprendre et à maintenir.
+![sloc](./visualization/fig-tp2-sloc.png "sloc")
 - Le WMC mesure la complexité interne d'une classe à travers la complexité cyclomatique de ses méthodes ; une valeur élevée indique généralement une classe plus difficile à tester et à faire évoluer.
+- ![wmc](./visualization/fig-tp2-wmc.png "wmc")
 - Le CBO évalue le niveau de dépendance entre classes : un couplage fort signifie qu'une modification peut avoir des effets de bord ailleurs dans le système. 
+![CBO](./visualization/fig-tp2-cbo.png "CBO")
 - Le RFC donne une estimation du nombre de méthodes potentiellement exécutées en réponse à un appel, ce qui impacte directement la complexité des tests. 
+![rfc](./visualization/fig-tp2-rfc.png "rfc")
 - Le TCC mesure la cohésion interne d'une classe, c'est-à-dire dans quelle mesure ses méthodes travaillent sur les mêmes données — un indicateur important pour juger si une classe respecte le principe de Responsabilité Unique.
+![tcc](./visualization/fig-tp2-tcc.png "tcc")
 
 Nous avons volontairement exclu certaines métriques comme NOC et DIT, puisque le projet n'utilise pas l'héritage. Les métriques dynamiques (couverture de tests, performance, etc.) n'ont pas été considérées car elles dépassent le cadre d'une analyse statique avec Moose.
 
