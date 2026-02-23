@@ -1,98 +1,12 @@
-# MGL843-tp1
+# MGL843-tp2
 
-## 🚀 Démarrage Rapide
+### Interface Web
 
-### Interface Web (Graphique)
-
-Lancer l'interface visuelle moderne :
+Lancer l'interface visuelle :
 
 ```bash
 npm run dev:web
 ```
-
-Puis ouvrez **[http://localhost:3000](http://localhost:3000)** dans votre navigateur.
-
-### Interface CLI (Terminal)
-
-Utiliser l'application en ligne de commande :
-
-```bash
-npm start -- <commande>
-# Exemple : npm start -- list
-```
-
-## Utilisation du CLI
-
-Une application en ligne de commande (CLI) pour gérer des notes, écrit en TypeScript.
-
-### Setup
-
-```bash
-npm install
-npm run build
-```
-
-### Commands
-
-#### Création d'une note
-
-```bash
-npm start -- create "Ma super note" -t tag1 tag2
-# OR
-node dist/index.js create "Ma super note" -t tag1 tag2
-```
-
-#### Liste des notes
-
-```bash
-npm start -- list
-```
-
-#### Rechercher des notes
-
-```bash
-npm start -- search "query"
-```
-
-#### Ajouter des tags
-
-```bash
-npm start -- tag <note-id> newtag
-```
-
-#### Exporter des notes
-
-```bash
-npm start -- export ./my-notes.json
-```
-
-## Lancement des Tests
-
-```bash
-npm test
-```
-
-## Interface Web
-
-Une interface web graphique moderne pour gérer vos notes avec une navigation intuitive.
-
-### Démarrage du serveur web
-
-#### Mode développement
-
-```bash
-npm install  # Installer les dépendances si ce n'est pas déjà fait
-npm run dev:web
-```
-
-#### Mode production
-
-```bash
-npm run build:web
-npm run start:web
-```
-
-Le serveur démarrera sur **http://localhost:3000**
 
 ### Fonctionnalités de l'interface web
 
@@ -103,141 +17,97 @@ Le serveur démarrera sur **http://localhost:3000**
 - **🗑️ Supprimer** : Suppression de notes avec confirmation
 - **✨ Design moderne** : Interface avec glassmorphism, animations fluides et design responsive
 
-### Interface CLI et Web ensemble
 
-Le CLI et l'interface web partagent le même fichier de données (`todo-app-cli.json`). Vous pouvez utiliser les deux interfaces de manière interchangeable :
+### 3.1 Ajouter des exigences au projet TypeScript
 
-```bash
-# Créer une note via CLI
-npm start -- create "Note depuis le CLI" -t urgent
+**Quelles sont les exigences que vous avez ajoutées ? Justifiez brièvement chaque exigence.**
 
-# La note apparaîtra automatiquement sur l'interface web après un refresh
+- Ergonomie et Utilisabilité (Interface Web) : Pour augmenter l'accessibilité de l'outil, nous avons transposé l'ensemble des fonctionnalités initialement prévues en ligne de commande (CLI) vers une interface utilisateur (UI). Ce passage au web permet une gestion visuelle plus intuitive des tâches et une adoption plus rapide pour les utilisateurs finaux.
+
+- Robustesse et Évolutivité (Architecture Backend) : Afin de garantir la solidité du système, nous avons intégré une couche Backend. Cette architecture assure une séparation nette entre la logique métier et l'affichage (Frontend), facilitant ainsi l'intégration future d'une base de données persistante et garantissant une meilleure intégrité des données lors des échanges.
+
+- Gestion de l'Éphémérité (Date d'expiration) : Nous avons introduit la notion de cycle de vie des notes. Les utilisateurs peuvent désormais définir une date d'expiration pour chaque entrée, déclenchant une suppression automatique après échéance. Cela permet de maintenir une liste de tâches propre et pertinente sans intervention manuelle constante.
+
+> Planification de la Récurrence (Note sur le périmètre) : Dans l'optique d'automatiser la gestion des tâches répétitives, l'exigence de récurrence (quotidienne, hebdomadaire, mensuelle) avait été identifiée comme une extension naturelle du concept d'expiration. Cependant, suite aux contraintes de temps liées, cette fonctionnalité n'a pas été implémentée dans la version actuelle.
+
+**Comment les exigences ajoutées augmentent-elles la complexité du projet ? Expliquez en quoi elles affectent la conception du projet par rapport aux exigences initiales (TP1).**
+
+
+Utilisabilté - L'ajout d'une interface web graphique moderne augmente la complexité du projet en introduisant une nouvelle couche de présentation qui nécessite la gestion de l'état, des interactions utilisateur. Cela nécessite également l'utilisation de technologies supplémentaires telles que HTML et CSS pour créer une expérience utilisateur fluide et attrayante. De plus nous avons dû implémenter une API REST pour permettre au frontend de communiquer avec le backend, ce qui ajoute une complexité supplémentaire en termes de gestion des routes, de validation des données, et de sécurité.
+
+Réutilisabilité - Le backend se base sur la même classe que celle développée et utilisée pour le CLI, ce qui nous a permis de réutiliser une grande partie du code existant pour gérer les notes, les tags, et les opérations CRUD. Cependant, nous avons dû adapter certaines parties du code pour permettre une utilisation à la fois via le CLI et l'interface web, ce qui a introduit une certaine complexité en termes de gestion des différentes interfaces utilisateur.
+
+Précision - L'ajout de la notion d'expiration pour les notes ajoute une complexité supplémentaire en termes de gestion des données et de logique métier. Nous avons dû implémenter des mécanismes pour vérifier régulièrement les notes expirées et assurer que les opérations sur les notes prennent en compte cette fonctionnalité. Une fonctionnalité de récurrence avait été envisagée, mais elle n'a pas été implémentée dans la version actuelle. Cela a nécessité une réflexion approfondie sur la structure des données et la logique de l'application pour garantir que toutes les fonctionnalités fonctionnent correctement ensemble.
+
+### 3.2 Visualiser les métriques du projet TypeScript
+
+
+**Expliquez les métriques que vous avez choisies. Pourquoi sont-elles importantes pour évaluer la qualité de la conception ?**
+
+Pour évaluer la qualité de la conception, nous avons choisi cinq métriques statiques extraites du modèle Famix généré par ts2famix, sans exécuter le code. L'objectif était d'analyser la taille, la complexité, le couplage et la cohésion des classes, qui sont des indicateurs classiques de qualité de conception.
+
+- Le SLOC permet d'avoir une première idée de la taille des classes : plus une classe est volumineuse, plus elle risque d'être difficile à comprendre et à maintenir.
+- Le WMC mesure la complexité interne d'une classe à travers la complexité cyclomatique de ses méthodes ; une valeur élevée indique généralement une classe plus difficile à tester et à faire évoluer.
+- Le CBO évalue le niveau de dépendance entre classes : un couplage fort signifie qu'une modification peut avoir des effets de bord ailleurs dans le système. 
+- Le RFC donne une estimation du nombre de méthodes potentiellement exécutées en réponse à un appel, ce qui impacte directement la complexité des tests. 
+- Le TCC mesure la cohésion interne d'une classe, c'est-à-dire dans quelle mesure ses méthodes travaillent sur les mêmes données — un indicateur important pour juger si une classe respecte le principe de Responsabilité Unique.
+
+Nous avons volontairement exclu certaines métriques comme NOC et DIT, puisque le projet n'utilise pas l'héritage. Les métriques dynamiques (couverture de tests, performance, etc.) n'ont pas été considérées car elles dépassent le cadre d'une analyse statique avec Moose.
+
+**Si vous avez dû calculer des métriques supplémentaires, expliquez comment vous les avez calculées.**
+
+Une seule métrique n'était pas directement disponible dans le modèle Famix : le RFC. Nous avons donc dû la calculer manuellement dans Pharo.
+
+Conformément à la définition CK, nous avons additionné le nombre de méthodes propres à la classe et le nombre de méthodes externes distinctes qu'elle appelle. Nous avons pris soin de dédupliquer les méthodes appelées afin d'éviter de compter plusieurs fois la même dépendance.
+
+```smalltalk
+distinctCalledMethods := (c outgoingInvocations collect: [:i | i candidates]) flatten asSet.
+rfc := c methods size + distinctCalledMethods size.
 ```
 
-### Technologies utilisées
+Nous avons également vérifié qu'une version simplifiée (sans déduplication explicite) produisait les mêmes résultats sur notre projet, ce qui montre qu'aucune méthode externe n'est appelée plusieurs fois dans une même classe. Les valeurs de RFC obtenues sont donc cohérentes avec la définition théorique.
 
-**Backend:**
+Les métriques WMC et TCC étaient disponibles directement dans Moose (weightedMethodCount et tightClassCohesion), donc aucun calcul supplémentaire n'a été nécessaire. L'ensemble des résultats a ensuite été exporté en CSV et visualisé avec Python (Matplotlib).
 
-- Express.js - Serveur web
-- TypeScript - Langage de programmation
-- CORS - Support cross-origin
+**Quelles sont les éléments (classes, modules, méthodes, fonctions, etc.) remarquables dans le projet ? Comment les avez-vous identifiées ?**
 
-**Frontend:**
+L’analyse des métriques extraites avec Moose et visualisées via Roassal et Python a permis d’identifier plusieurs classes remarquables, soit par leur complexité, soit par leur rôle central dans l’architecture.
 
-- HTML5 - Structure sémantique
-- CSS3 - Design glassmorphism avec animations
-- JavaScript (Vanilla) - Interactions dynamiques
-- Google Fonts (Inter) - Typographie premium
+La classe NoteManager ressort comme l’élément le plus critique du projet. Elle présente des valeurs élevées en taille (SLOC), en complexité (WMC) et en couplage (CBO), et se situe dans la zone à risque du graphique WMC vs CBO. Son RFC relativement élevé confirme qu’elle concentre beaucoup de comportement, ce qui la rend plus difficile à tester et à faire évoluer.
 
-Script Python pour visualiser les métriques des classes exportées depuis Moose/Pharo.
+La classe TagRepository, introduite en TP2, se distingue par une complexité interne importante (WMC élevé) et surtout par une cohésion très faible (TCC bas). Cela suggère que ses méthodes manipulent peu d’attributs en commun et que la classe regroupe probablement plusieurs responsabilités.
 
-### Dépendances
+La classe NotesCLI présente une complexité plus subtile. Son WMC est faible, mais sa méthode configure est longue et contient plusieurs fonctions fléchées imbriquées, ce qui masque en partie sa complexité réelle. Son TCC dépasse 1, ce qui est théoriquement impossible pour un ratio de cohésion ; cela indique probablement une limite dans l’extraction métrique (liée à l’interprétation des fonctions fléchées par ts2famix). Nous ne considérons donc pas cette valeur comme représentative de sa cohésion réelle.
 
-- Python 3.14+
-- pandas
-- matplotlib
+À l’inverse, la classe Tag apparaît comme un exemple de conception simple et cohésive : petite taille, faible complexité et absence de couplage sortant. Elle se situe clairement dans la zone “saine” des visualisations.
 
-### Setup & Run
+Ces éléments ont été identifiés en croisant les métriques principales (SLOC, WMC, CBO, RFC, TCC) et en observant les zones à risque dans les graphiques de dispersion, ce qui a permis de repérer à la fois les classes dominantes et les classes bien structurées.
 
-```bash
-cd visualization
-uv sync
-uv run python visualize_metrics.py       # TP1 — 3 classes, graphique en barres
-uv run python visualize_metrics_tp2.py   # TP2 — 4 classes, 6 graphiques (SLOC, WMC, CBO, RFC, TCC, dispersion)
-```
+**Expliquez le rôle de ces éléments dans le projet. Pourquoi sont-ils importants ?**
 
-Ces scripts génèrent des graphiques à partir des métriques de classes exportées en CSV depuis Moose/Pharo :
-- `notes-cli-classes.csv` → TP1 (3 classes) → `fig4-metrics-chart.png`
-- `notes-cli-classes-tp2.csv` → TP2 (4 classes) → `fig-tp2-sloc.png`, `fig-tp2-wmc.png`, `fig-tp2-cbo.png`, `fig-tp2-rfc.png`, `fig-tp2-tcc.png`, `fig-tp2-scatter.png`
+La classe Tag représente une étiquette avec un nom et une couleur. Son rôle est d’être le modèle de données partagé entre les autres classes. Elle est particulièrement stable car elle ne possède aucune dépendance, ce qui la rend facilement réutilisable dans tout le système.
 
-## Travail à réaliser
+NoteManager gère le cycle de vie complet des notes : création, modification, suppression, recherche et expiration. C’est la classe centrale du projet, puisque toutes les opérations passent par elle ; toute faiblesse de conception à ce niveau impacte directement l’ensemble du système.
 
-## 3.1.3 Règles importantes : Retour d'expérience IA
+TagRepository gère les tags de manière indépendante : création, couleurs, compteurs d’usage et persistance dans tags.json. Elle a été introduite en TP2 afin de retirer cette responsabilité de NoteManager, évitant ainsi qu’elle ne devienne une God Class et améliorant la séparation des responsabilités.
 
-**Avez-vous déjà utilisé des outils d’IA générative pour programmer avant ce laboratoire ? Si oui, lesquels et dans quel contexte ?**
+NotesCLI configure les commandes du terminal via commander et délègue à NoteManager, tandis que server.ts expose l’API REST et démarre le planificateur d’expiration. Ces deux modules constituent les points d’entrée du système — l’un pour le CLI, l’autre pour le web — et définissent la manière dont l’utilisateur interagit avec l’application.
 
-- **Raphael :** Oui, et plus souvent que je ne peux le compter. Dans ma routine de développeur au travail, j’utilise régulièrement des outils d’IA générative pour accomplir mes tâches plus rapidement, mais aussi pour apprendre. Je les utilise parfois comme un professeur, notamment lorsque je souhaite comprendre rapidement un concept, plutôt que de passer par des plateformes comme Stack Overflow.
-  Dans mon quotidien de développeur, j’ai eu l’occasion d’utiliser plusieurs outils, notamment Antigravity, Cursor et Windsurf. Personnellement, je les utilise principalement en mode plan, c’est-à-dire que je passe systématiquement en revue toutes les modifications proposées avant de leur permettre d’être appliquées. J’ai également exploré plus en profondeur des outils comme BMAD.
-- **Pamela :** Oui, j'utilise Claude avec Zed pour mes projets perso. J'ai aussi essayé Warp pour le CLI, et Windsurf au travail pendant quelques jours (accès gratuit, mais vraiment pas terrible). D'habitude je donne des tâches précises - implémenter tel endpoint, refactorer telle fonction, et je review tout ce qu'il génère. J'ai l'impression que ces modèles deviennent moins performants avec le temps - j'ai lu que certains providers réduisent la quantization pour économiser des ressources.
-- **Dorian :** Oui, utilisation quotidienne intégrée au flux de travail (via l'IDE Cursor). Utilisation pour la résolution de problèmes complexes et, lors de projets personnels, pour l'idéation d'architecture ou de pistes de développement (en utilisant des prompts de type "Agis comme un développeur Senior" pour éviter les mauvaises pratiques).
+Enfin, public/app.js gère les interactions utilisateur, les appels à l’API et la mise à jour de l’interface. Il représente le point de contact direct avec l’utilisateur web, ce qui en fait un élément déterminant pour l’expérience utilisateur.
 
-**Quelle a été votre expérience globale en utilisant l’IA générative pour créer ce projet TypeScript ? Quels aspects ont bien fonctionné et quels aspects ont été plus difficiles ?**
+**Commentez sur la qualité de la conception du projet. Y a-t-il des éléments qui semblent mal conçus ? Pourquoi ?**
 
-Notre expérience a été intuitive et très rapide grâce à l'agent **Gemini 3 Pro** intégré dans Visual Studio Code. Il nous a fallu seulement quelques prompts détaillant l'ensemble du TP1 pour générer le projet, les tests unitaires et le pipeline de test.
+Bien que l'HTML reste simple, si celui-ci vient à être plus complexe, il serait nécessaire d'utiliser un framework de frontend tel que React ou Vue.js pour gérer l'état de l'application et les interactions utilisateur de manière plus efficace. De plus, l'utilisation d'un framework permettrait de mieux structurer le code frontend et de faciliter la maintenance à long terme.
 
-- **Points positifs :** L'agent a été bluffant par sa compréhension globale des requis et le respect des contraintes techniques. Il a réussi à implémenter toutes les fonctionnalités demandées.
-- **Points négatifs/Difficultés :** L'IA a omis une bonne pratique essentielle : l'ajout d'un fichier `.gitignore` pour éviter de versionner des fichiers indésirables. De plus, elle a affirmé que le projet était terminé et fonctionnel alors que l'exécution des tests révélait encore un échec (hallucination sur le résultat des tests). Aussi le LLM a ajouté des dependences externe sans nous demander l'avis au préalable.
+Cela se fait aussi ressentir dans le fichier `public/app.js` qui contient une grande quantité de code JavaScript pour gérer les interactions utilisateur et la communication avec le backend. Bien que cela fonctionne, cela peut devenir difficile à maintenir à mesure que l'application évolue et que de nouvelles fonctionnalités sont ajoutées. De plus celui-ci mélange plusieurs logique comme les interactions utilisateur, la manipulation du DOM, et les appels API, mise à jour du style, ce qui rend le code plus difficile à comprendre et à déboguer.
 
-**Combien de temps avez-vous pris pour créer ce projet TypeScript avec l’IA générative ? Avez-vous respecté le temps suggéré ?**
+Pour le serveur il aurait intéressant de d'augmenter la granularité du code en séparant les différentes responsabilités dans des modules ou classes distincts. Par exemple, la logique de gestion des notes pourrait être isolée dans un module dédié, tandis que la logique de gestion des tags pourrait être dans un autre module. Cela permettrait de mieux organiser le code et de faciliter la maintenance à long terme. De plus, cela permettrait de réduire le couplage entre les différentes parties du code.
 
-La création du projet et les légers ajustements nous ont pris environ **20 minutes**, ce qui nous positionne largement en dessous de l'estimation initiale de 45 à 60 minutes.
+Cependant, les métriques extraites avec Moose mettent en évidence des problèmes de conception plus structurants.
+La classe NoteManager cumule deux responsabilités majeures : la persistance des données (lecture/écriture JSON) et la logique métier (CRUD, recherche, expiration). Cette concentration viole le principe de Responsabilité Unique et explique ses valeurs élevées en WMC et en CBO. Sa croissance entre TP1 et TP2 (8 à 11 méthodes) confirme une tendance à centraliser le comportement plutôt qu’à le distribuer. De plus, la méthode loadNotes() relit le fichier à chaque opération, ce qui introduit un coût inutile et révèle une absence de séparation claire entre stockage et logique métier.
 
-### 3.2 Partie 1 : Modélisation du projet TypeScript
+La classe TagRepository, bien qu’introduite pour améliorer la modularité, présente une cohésion très faible (TCC=0.045). Ses méthodes couvrent des aspects hétérogènes — couleurs, compteurs d’usage, persistance — ce qui suggère qu’elle regroupe encore plusieurs responsabilités. Le fait que recalculateUsageCounts() soit exécutée au démarrage pour corriger un état potentiellement incohérent révèle également un couplage indirect entre la gestion des notes et celle des tags.
 
-> **Pourquoi appelle-t-on le modèle généré par ts2famix un « modèle de code source » ?**
+À l’inverse, la classe Tag illustre une conception saine : simple, cohésive et sans dépendances sortantes. Ses métriques faibles confirment qu’elle respecte naturellement le principe de forte cohésion (WMC=1, CBO_out=0, RFC=3).
 
-Le modèle généré par `ts2famix` est qualifié de « modèle de code source » car il représente **les entités logicielles telles qu'elles sont implémentées** (fichiers, classes, méthodes, variables) ainsi que leurs relations statiques (héritage, invocations, accès).
-
-Contrairement à un modèle de domaine ou conceptuel qui décrit des règles métier abstraites, le modèle Famix capture la structure exacte et détaillée du code (basé sur l'AST), ce qui le rend exploitable pour des tâches d'ingénierie logicielle comme l'analyse statique, la détection de métriques ou le refactoring.
-
-> **Quelles sont les différences entre un modèle de code source Famix et un modèle de classes TypeScript en UML ? Peut-on tout modéliser de TypeScript dans les diagrammes de classes UML ? Soyez précis dans votre réponse.**
-
-**Différences principales :**
-
-- **Objectif :** Famix est un métamodèle destiné au traitement automatisé (parsing, analyse de données) qui capture des détails de bas niveau comme les invocations de méthodes ou les accès aux attributs à l'intérieur des fonctions. UML est un langage de modélisation visuel destiné principalement à la conception et à la communication entre humains, offrant souvent une vue plus abstraite.
-- **Contenu :** Famix lie explicitement les éléments (ex: une méthode _x_ appelle une méthode _y_). Un diagramme de classes UML standard se concentre sur la structure statique (héritage, composition) sans nécessairement capturer la dynamique des appels internes ou le flux de données.
-
-**Limites de l'UML avec TypeScript :**
-Non, il n'est pas possible de tout modéliser fidèlement de TypeScript dans un diagramme de classes UML standard sans adaptations lourdes. TypeScript possède des fonctionnalités spécifiques qui n'ont pas d'équivalent direct dans la norme UML (conçue initialement pour des langages orientés objets nominaux comme Java ou C++) :
-
-1. **Types avancés :** Les _Union Types_ (`string | number`), _Intersection Types_, et _Utility Types_ (`Partial<T>`, `Pick<T>`) sont difficiles à représenter.
-2. **Typage structurel :** TypeScript utilise le "duck typing" (compatibilité basée sur la forme de l'objet), alors qu'UML repose généralement sur une hiérarchie explicite (nominale).
-
-### 3.3 Partie 2 : Visualisation du projet TypeScript
-
-> **Quelles sont les classes remarquables dans le projet ? Comment le voyez-vous dans la visualisation ?**
-
-Nous avons identifié une classe particulièrement remarquable : **`NoteManager`**. Celle-ci centralise la logique avec 8 méthodes.
-Dans la visualisation générée par Roassal, elle apparaît **amplement plus grande** que les autres classes, ce qui souligne sa complexité et son poids dans le projet.
-
-![Moose Inspector](./images/fig0-moose-inspector.png "Moose Inspector")
-**Figure 0:** Inspection du modèle dans Moose - 3 classes identifiées (Tag, NoteManager, NotesCLI)
-
-![Visualisation des classes](./images/fig1-roassal-classes.png "Visualisation Roassal")
-**Figure 1:** Visualisation des classes avec Roassal
-
-![Navigation NotesCLI](./images/fig2-notescli-class.png "NotesCLI")
-**Figure 2:** Navigation vers la classe NotesCLI dans Moose
-
-![Navigation NoteManager](./images/fig3-notemanager-class.png "NoteManager")
-**Figure 3:** Navigation vers la classe NoteManager dans Moose
-
-> **Expliquez le rôle de ces classes dans le projet. Pourquoi sont-elles importantes ?**
-
-- **`NotesCLI`** : Gère les interactions avec l'utilisateur via la console (terminal), en s'appuyant sur la librairie externe `commander`. Elle sert de point d'entrée.
-- **`Tag`** : Classe modèle simple représentant une étiquette via un attribut `name`.
-- **`NoteManager`** : Agit comme un "pseudo-repository". Elle gère la persistance des données (lecture/écriture du fichier JSON) et la logique métier (ajout/modification de notes).
-
-> **Commentez sur la qualité de la conception du projet. Y a-t-il des classes qui semblent mal conçues ? Pourquoi ?**
-
-_Note de contexte : Notre projet a initialement été modélisé selon un paradigme fonctionnel, ce qui nous a bloqués pour la partie visualisation. Bien que le modèle ait été correctement généré par `ts2famix`, il s'est avéré inexploitable avec Roassal 3. Nous avons dû refaire une passe avec le LLM pour favoriser un paradigme orienté objet._
-
-Concernant la conception actuelle, la classe **`NoteManager`** présente un défaut d'optimisation.
-Les interactions avec les données ne sont pas optimisées : chaque opération (ajout, tag, export, list) appelle la méthode `loadNotes`, provoquant une **lecture système du fichier JSON à chaque fois**.
-**Amélioration suggérée :** Une approche avec un chargement unique (caching) en mémoire (instanciation d'un tableau) au démarrage de l'application aurait été plus adéquate pour réduire les accès disque et améliorer les performances.
-
-### 3.4 Partie 3 : Exportation des données
-
-Lien du dépot: [URL](https://github.com/ebirdyx/mgl843-TP1-Pharo/tree/master)
-
-#### Données exportées
-
-Les fichiers exportés sont `notes-cli-classes.csv` (TP1, voir `fig4-csv-export.png`) et `notes-cli-classes-tp2.csv` (TP2).
-
-**Lien du dépôt GitHub:** https://github.com/raphaelNguimbus/MGL843-tp1
-
-### 3.5 Partie 4 : Visualisation externe
-
-On a utilisé **Python** avec Pandas et Matplotlib pour visualiser les données du CSV.
-
-Le script `visualization/visualize_metrics_tp2.py` lit le fichier `notes-cli-classes-tp2.csv` et génère 6 graphiques (SLOC, WMC, CBO, RFC, TCC, dispersion) pour les 4 classes du projet TP2.
+Pour améliorer la conception à long terme, il serait pertinent de séparer clairement la persistance, la logique métier et la planification. Extraire un NoteStorage (persistance), recentrer NoteManager sur la logique métier, et isoler un ExpirationScheduler dédié permettrait de mieux respecter le SRP et de réduire mécaniquement la complexité et le couplage observés.
