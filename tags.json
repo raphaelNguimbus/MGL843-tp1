@@ -38,7 +38,7 @@
   {
     "name": "urgent",
     "color": "#00364a",
-    "usageCount": 0,
+    "usageCount": 1,
     "createdAt": "2026-02-09T05:05:53.634Z"
   },
   {
@@ -50,13 +50,13 @@
   {
     "name": "shopping",
     "color": "#8b5cf6",
-    "usageCount": 0,
+    "usageCount": 1,
     "createdAt": "2026-02-09T23:53:28.588Z"
   },
   {
     "name": "food",
     "color": "#8b5cf6",
-    "usageCount": 0,
+    "usageCount": 1,
     "createdAt": "2026-02-09T23:53:31.256Z"
   },
   {

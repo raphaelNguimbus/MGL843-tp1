@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { NoteManager } from './notes';
+import { NoteManager } from './manager/NoteManager';
 
 class NotesCLI {
     private program: Command;
