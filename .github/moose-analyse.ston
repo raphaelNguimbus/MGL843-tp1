@@ -2,7 +2,7 @@ SmalltalkCISpec {
   #loading : [
     SCIMetacelloLoadSpec {
       #baseline : 'FamixTypeScript',
-      #repository : 'github://raphaelNguimbus/MGL843-tp1:__BRANCH__/src',
+      #repository : 'github://fuhrmanator/FamixTypeScript:master/src',
       #platforms : [ #pharo ],
       #onConflict : #useIncoming,
       #onUpgrade : #useIncoming

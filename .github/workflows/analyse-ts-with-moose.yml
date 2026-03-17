@@ -47,13 +47,8 @@ jobs:
 
             - name: Charger FamixTypeScript et exporter les métriques CSV
               run: |
-                  # Determine the current branch name (PR or push)
-                  BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
-                  echo "Using branch for Moose analysis: ${BRANCH_NAME}"
-                  # Generate a CI-specific STON file with the correct branch
-                  sed "s|:__BRANCH__/|:${BRANCH_NAME}/|" .github/moose-analyse.ston > .github/moose-analyse-ci.ston
-                  # Run the Moose analysis using the generated STON file
-                  smalltalkci -s ${{ steps.smalltalkci.outputs.smalltalk-image }} .github/moose-analyse-ci.ston
+                  # Run the Moose analysis using the Moose configuration
+                  smalltalkci -s ${{ steps.smalltalkci.outputs.smalltalk-image }} .github/moose-analyse.ston
               shell: bash
               timeout-minutes: 20
 
