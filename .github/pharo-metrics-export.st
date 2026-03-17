@@ -1,4 +1,64 @@
 "============================================================"
+"TypeScriptModelCSVExporter class definition"
+"============================================================"
+Class {
+	#name : 'TypeScriptModelCSVExporter',
+	#superclass : 'Object',
+	#instVars : [
+		'model',
+		'outputPath'
+	],
+	#category : 'MGL843-TP1-Export',
+	#package : 'MGL843-TP1-Export'
+}
+
+{ #category : 'exporting' }
+TypeScriptModelCSVExporter >> exportToCSV [
+	| classes writeStream |
+	classes := model allModelClasses.
+	writeStream := outputPath asFileReference writeStream.
+	[ self writeCSVTo: writeStream classes: classes ] ensure: [ writeStream close ].
+	^ 'CSV exported to ', outputPath.
+]
+
+{ #category : 'private' }
+TypeScriptModelCSVExporter >> writeCSVTo: writeStream classes: classes [
+	"Write header"
+	writeStream nextPutAll: 'ClassName,NumberOfMethods,NumberOfAttributes'; cr.
+	"Write data rows (no external CSV lib required)"
+	classes do: [ :class |
+		writeStream
+			nextPutAll: (self escapeCSV: class name); nextPut: $,;
+			nextPutAll: (class methods size printString); nextPut: $,;
+			nextPutAll: (class attributes size printString); cr.
+	].
+]
+
+{ #category : 'private' }
+TypeScriptModelCSVExporter >> escapeCSV: aString [
+	"Escape quotes if present"
+	(aString includes: $") ifTrue: [ ^ '\"', (aString copyReplaceAll: '\"' with: '\"\"'), '\"' ].
+	^ aString.
+]
+
+{ #category : 'initialization' }
+TypeScriptModelCSVExporter >> initialize [
+	super initialize.
+	outputPath := 'model-export.csv'.
+]
+
+{ #category : 'accessing' }
+TypeScriptModelCSVExporter >> model: aModel [
+	model := aModel.
+]
+
+{ #category : 'accessing' }
+TypeScriptModelCSVExporter >> outputPath: aPath [
+	outputPath := aPath.
+]
+
+"============================================================"
+"============================================================"
 "Script Pharo - Export des métriques"
 "  il vaut mieux tester ce script dans un Playground si vous le modifiez"
 "============================================================"
@@ -38,6 +98,16 @@ modelFile readStreamDo: [ :readStream |
     model rootFolder: './'.
 ].
 Transcript show: 'Model loaded.'; cr.
+
+"--- 2b. Exécuter TypeScriptModelCSVExporter (intégré dans ce fichier) ---"
+[ | exporter |
+    exporter := TypeScriptModelCSVExporter new.
+    exporter model: model.
+    exporter outputPath: './model-export.csv'.
+    Transcript show: (exporter exportToCSV); cr.
+] on: Error do: [ :ex |
+    Transcript show: 'TypeScriptModelCSVExporter failed: ', ex description; cr.
+].
 
 "--- 3. Extraire les métriques ---"
 "allModelClasses retourne toutes les entités de type FamixTypeScriptClass."
