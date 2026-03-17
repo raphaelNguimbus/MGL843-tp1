@@ -59,4 +59,4 @@ jobs:
                   path: |
                       export_metrics.md
                       model.json
-                      model-export.csv
+                      export_metrics.csv

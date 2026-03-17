@@ -99,53 +99,51 @@ modelFile readStreamDo: [ :readStream |
 ].
 Transcript show: 'Model loaded.'; cr.
 
-"--- 2b. Exécuter TypeScriptModelCSVExporter (intégré dans ce fichier) ---"
-[ | exporter |
-    exporter := TypeScriptModelCSVExporter new.
-    exporter model: model.
-    exporter outputPath: './model-export.csv'.
-    Transcript show: (exporter exportToCSV); cr.
-] on: Error do: [ :ex |
-    Transcript show: 'TypeScriptModelCSVExporter failed: ', ex description; cr.
-].
-
-"--- 3. Extraire les métriques ---"
+"--- 3. Extraire les métriques et écrire le CSV ---"
 "allModelClasses retourne toutes les entités de type FamixTypeScriptClass."
 classes := model allModelClasses.
 Transcript show: 'Classes found: ', classes size printString; cr.
 
-"Ouverture du fichier .md en écriture."
-stream := './export_metrics.md' asFileReference writeStream.
+"Ouverture du fichier CSV en écriture avec NeoCSV (inclus dans Pharo)."
+"Séparateur : point-virgule (;) pour compatibilité avec Excel FR."
+stream := './export_metrics.csv' asFileReference writeStream.
+writer := NeoCSVWriter on: stream.
+writer separator: $;.
 
-stream nextPutAll: 'Current working directory: '; nextPutAll: FileSystem workingDirectory pathString; cr; cr.
+"En-tête du CSV"
+writer nextPut: #( 'Nom_Classe' 'Nb_Methodes' 'Nb_Attributs' 'Lignes_de_Code' ).
 
-srcDir := './src' asFileReference.
+"Pour chaque classe, on calcule le nombre de lignes de code (LOC)."
+"Stratégie LOC inspirée du script du prof."
+classes do: [ :each |
+    | loc anchor srcFile content snippet |
+    loc := 0.
 
-srcDir exists ifTrue: [
-    stream nextPutAll: 'Files in src/ directory:'; cr.
-    srcDir entries do: [ :entry |
-        entry isFile ifTrue: [
-            stream nextPutAll: '- '; nextPutAll: entry name; cr.
+    "Tentative de calcul via le sourceAnchor (méthode principale)"
+    anchor := each sourceAnchor.
+    (anchor notNil and: [ anchor isKindOf: FamixTypeScriptIndexedFileAnchor ]) ifTrue: [
+        srcFile := anchor fileName asFileReference.
+        srcFile exists ifTrue: [
+            content := srcFile contents.
+            snippet := content copyFrom: anchor startPos to: (anchor endPos min: content size).
+            loc := snippet lineCount.
         ].
     ].
-    stream cr.
-] ifFalse: [
-    stream nextPutAll: 'src/ directory not found'; cr; cr.
-].
 
-stream nextPutAll: 'There are '; nextPutAll: classes size asString; nextPutAll: ' classes  '; cr; cr.
+    "Fallback : somme des LOC des méthodes"
+    loc = 0 ifTrue: [
+        loc := each methods inject: 0 into: [ :sum :m | sum + (m numberOfLinesOfCode ifNil: [ 0 ]) ].
+    ].
 
-"Produce a markdown table."
-stream nextPutAll: '| Class | Methods | Attributes | Lines of Code |'; cr.
-stream nextPutAll: '|-------|---------|------------|---------------|'; cr.
-classes do: [ :each |
-    stream nextPutAll: '| '; nextPutAll: each name; nextPutAll: ' | ';
-        nextPutAll: each numberOfMethods asString; nextPutAll: ' | ';
-        nextPutAll: each numberOfAttributes asString; nextPutAll: ' | ';
-        nextPutAll: each numberOfLinesOfCode asString; nextPutAll: ' |';
-        cr.
+    Transcript show: '  ', each name, ' loc:', loc printString; cr.
+    writer nextPut: {
+        each name.
+        each numberOfMethods.
+        each numberOfAttributes.
+        loc.
+    }.
 ].
 
 stream close.
 
-Transcript show: 'Export complete - export_metrics.md'; cr.
+Transcript show: 'Export complete - export_metrics.csv'; cr.
