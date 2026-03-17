@@ -2,17 +2,17 @@
 "TypeScriptModelCSVExporter class definition"
 "============================================================"
 Class {
-	#name : 'TypeScriptModelCSVExporter',
-	#superclass : 'Object',
+	#name : #TypeScriptModelCSVExporter,
+	#superclass : #Object,
 	#instVars : [
-		'model',
-		'outputPath'
+		#model,
+		#outputPath
 	],
-	#category : 'MGL843-TP1-Export',
-	#package : 'MGL843-TP1-Export'
+	#category : #'MGL843-TP1-Export',
+	#package : #'MGL843-TP1-Export'
 }
 
-{ #category : 'exporting' }
+{ #category : #'exporting' }
 TypeScriptModelCSVExporter >> exportToCSV [
 	| classes writeStream |
 	classes := model allModelClasses.
@@ -21,7 +21,7 @@ TypeScriptModelCSVExporter >> exportToCSV [
 	^ 'CSV exported to ', outputPath.
 ]
 
-{ #category : 'private' }
+{ #category : #'private' }
 TypeScriptModelCSVExporter >> writeCSVTo: writeStream classes: classes [
 	"Write header"
 	writeStream nextPutAll: 'ClassName,NumberOfMethods,NumberOfAttributes'; cr.
@@ -34,25 +34,25 @@ TypeScriptModelCSVExporter >> writeCSVTo: writeStream classes: classes [
 	].
 ]
 
-{ #category : 'private' }
+{ #category : #'private' }
 TypeScriptModelCSVExporter >> escapeCSV: aString [
 	"Escape quotes if present"
 	(aString includes: $") ifTrue: [ ^ '\"', (aString copyReplaceAll: '\"' with: '\"\"'), '\"' ].
 	^ aString.
 ]
 
-{ #category : 'initialization' }
+{ #category : #'initialization' }
 TypeScriptModelCSVExporter >> initialize [
 	super initialize.
 	outputPath := 'model-export.csv'.
 ]
 
-{ #category : 'accessing' }
+{ #category : #'accessing' }
 TypeScriptModelCSVExporter >> model: aModel [
 	model := aModel.
 ]
 
-{ #category : 'accessing' }
+{ #category : #'accessing' }
 TypeScriptModelCSVExporter >> outputPath: aPath [
 	outputPath := aPath.
 ]
