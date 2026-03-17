@@ -1,76 +1,18 @@
 "============================================================"
-"TypeScriptModelCSVExporter class definition"
+"Script Pharo - Export des métriques de qualité en CSV"
 "============================================================"
-Class {
-	#name : #TypeScriptModelCSVExporter,
-	#superclass : #Object,
-	#instVars : [
-		#model,
-		#outputPath
-	],
-	#category : #'MGL843-TP1-Export',
-	#package : #'MGL843-TP1-Export'
-}
-
-{ #category : #'exporting' }
-TypeScriptModelCSVExporter >> exportToCSV [
-	| classes writeStream |
-	classes := model allModelClasses.
-	writeStream := outputPath asFileReference writeStream.
-	[ self writeCSVTo: writeStream classes: classes ] ensure: [ writeStream close ].
-	^ 'CSV exported to ', outputPath.
-]
-
-{ #category : #'private' }
-TypeScriptModelCSVExporter >> writeCSVTo: writeStream classes: classes [
-	"Write header"
-	writeStream nextPutAll: 'ClassName,NumberOfMethods,NumberOfAttributes'; cr.
-	"Write data rows (no external CSV lib required)"
-	classes do: [ :class |
-		writeStream
-			nextPutAll: (self escapeCSV: class name); nextPut: $,;
-			nextPutAll: (class methods size printString); nextPut: $,;
-			nextPutAll: (class attributes size printString); cr.
-	].
-]
-
-{ #category : #'private' }
-TypeScriptModelCSVExporter >> escapeCSV: aString [
-	"Escape quotes if present"
-	(aString includes: $") ifTrue: [ ^ '\"', (aString copyReplaceAll: '\"' with: '\"\"'), '\"' ].
-	^ aString.
-]
-
-{ #category : #'initialization' }
-TypeScriptModelCSVExporter >> initialize [
-	super initialize.
-	outputPath := 'model-export.csv'.
-]
-
-{ #category : #'accessing' }
-TypeScriptModelCSVExporter >> model: aModel [
-	model := aModel.
-]
-
-{ #category : #'accessing' }
-TypeScriptModelCSVExporter >> outputPath: aPath [
-	outputPath := aPath.
-]
-
+"Ce script est exécuté dans une image Moose par smalltalkCI."
+"Il effectue 3 étapes :"
+"  1. Charger le modèle Famix (model.json) généré par ts2famix"
+"  2. Extraire les métriques de chaque classe (NOM, NOA, LOC)"
+"  3. Écrire les résultats dans export_metrics.csv"
 "============================================================"
-"============================================================"
-"Script Pharo - Export des métriques"
-"  il vaut mieux tester ce script dans un Playground si vous le modifiez"
-"============================================================"
-| modelFile model classes stream writer srcDir |
+
+| modelFile model classes stream writer |
 
 "--- 1. Localiser le fichier model.json ---"
 "On cherche d'abord dans le répertoire courant,"
 "puis dans le workspace GitHub Actions si non trouvé."
-"Le modèle doit être au même endroit où il a été généré par ts2famix."
-"Sinon, les SourceAnchors ne seront pas corrects et les métriques"
-" concernant le code source, ex. numberOfLinesOfCode"
-" ne seront pas correctes."
 modelFile := './model.json' asFileReference.
 
 modelFile exists ifFalse: [
@@ -89,12 +31,11 @@ modelFile exists ifFalse: [
 
 "--- 2. Charger le modèle JSON dans Moose ---"
 "FamixTypeScriptModel est la classe du métamodèle chargée à l'étape"
-"précédente par Metacello (via .ston)."
+"précédente par Metacello (via moose-config.ston)."
 "importFromJSONStream: lit le JSON et crée les entités Famix en mémoire."
 Transcript show: 'Loading model into Moose...'; cr.
 modelFile readStreamDo: [ :readStream |
     model := FamixTypeScriptModel new importFromJSONStream: readStream.
-    "To find the source code of the model"
     model rootFolder: './'.
 ].
 Transcript show: 'Model loaded.'; cr.
@@ -114,7 +55,11 @@ writer separator: $;.
 writer nextPut: #( 'Nom_Classe' 'Nb_Methodes' 'Nb_Attributs' 'Lignes_de_Code' ).
 
 "Pour chaque classe, on calcule le nombre de lignes de code (LOC)."
-"Stratégie LOC inspirée du script du prof."
+"La stratégie de calcul du LOC :"
+"  - Priorité : lire le fichier source via le sourceAnchor de la classe"
+"    (positions startPos à endPos) et compter les lignes."
+"  - Fallback : si le fichier source n'est pas trouvé, sommer les LOC"
+"    de toutes les méthodes de la classe."
 classes do: [ :each |
     | loc anchor srcFile content snippet |
     loc := 0.
