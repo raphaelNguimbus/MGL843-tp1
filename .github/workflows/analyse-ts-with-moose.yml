@@ -1,0 +1,62 @@
+name: 🥤 TypeScript Analysis with Moose
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        types:
+            - opened
+            - synchronize
+            - reopened
+
+jobs:
+    analyze:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Checkout du dépôt
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: true
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+            - run: npm ci
+            - run: npm run build --if-present
+
+            - name: Installer ts2famix
+              run: npm install -g ts2famix
+
+            - name: Générer le modèle Famix (JSON)
+              run: |
+                  # -l 4 is log warnings only
+                  ts2famix -l 4 -i tsconfig.json -o model.json
+                  echo "Modèle généré : $(wc -c < model.json) octets"
+                  # Vérification rapide que le JSON est valide
+                  python3 -c "import json; json.load(open('model.json')); print('JSON valide')"
+
+            - name: Installer smalltalkCI (image Moose)
+              uses: hpi-swa/setup-smalltalkCI@v1
+              id: smalltalkci
+              with:
+                  smalltalk-image: Moose64-12
+
+            - name: Charger FamixTypeScript et exporter les métriques CSV
+              run: |
+                  # Run the Moose analysis using the Moose configuration
+                  smalltalkci -s ${{ steps.smalltalkci.outputs.smalltalk-image }} .github/moose-analyse.ston
+              shell: bash
+              timeout-minutes: 20
+
+            - name: Upload metrics artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: typescript-metrics
+                  path: |
+                      export_metrics.md
+                      model.json
+                      export_metrics.csv
