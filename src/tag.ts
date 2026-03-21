@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import type { Note } from './manager/NoteManager';
+import { TagColorService } from './services/TagColorService';
 
 export class Tag {
     constructor(
         public name: string,
-        public color: string = '#8b5cf6'
+        public color: string = TagColorService.DEFAULT_COLOR
     ) { }
 
     toString(): string {
@@ -26,22 +26,11 @@ export interface TagDefinition {
 
 export class TagRepository {
     private filePath: string;
-    private colorPalette: string[] = [
-        '#8b5cf6', // purple
-        '#3b82f6', // blue
-        '#10b981', // green
-        '#f59e0b', // amber
-        '#ef4444', // red
-        '#ec4899', // pink
-        '#14b8a6', // teal
-        '#f97316', // orange
-        '#6366f1', // indigo
-        '#84cc16', // lime
-    ];
-    private colorIndex: number = 0;
+    private colorService: TagColorService;
 
-    constructor(fileName: string = 'tags.json') {
+    constructor(fileName: string = 'tags.json', colorService: TagColorService = new TagColorService()) {
         this.filePath = path.join(process.cwd(), fileName);
+        this.colorService = colorService;
     }
 
     private loadTags(): TagDefinition[] {
@@ -58,12 +47,6 @@ export class TagRepository {
 
     private saveTags(tags: TagDefinition[]): void {
         fs.writeFileSync(this.filePath, JSON.stringify(tags, null, 2));
-    }
-
-    private getNextColor(): string {
-        const color = this.colorPalette[this.colorIndex % this.colorPalette.length];
-        this.colorIndex++;
-        return color;
     }
 
     public getAllTags(): TagDefinition[] {
@@ -85,7 +68,7 @@ export class TagRepository {
 
         const newTag: TagDefinition = {
             name,
-            color: color || this.getNextColor(),
+            color: color || this.colorService.getNextColor(),
             usageCount: 0,
             createdAt: new Date().toISOString()
         };
@@ -141,23 +124,15 @@ export class TagRepository {
         }
     }
 
-    public recalculateUsageCounts(allNotes: Note[]): void {
-        const tags = this.loadTags();
-
-        // Reset all counts
-        tags.forEach(t => t.usageCount = 0);
-
-        // Count usage from notes
-        allNotes.forEach(note => {
-            note.tags.forEach(tag => {
-                const tagDef = tags.find(t => t.name.toLowerCase() === tag.name.toLowerCase());
-                if (tagDef) {
-                    tagDef.usageCount++;
-                }
-            });
-        });
-
-        this.saveTags(tags);
+    public resolveTag(raw: string | { name: string; color?: string } | any): Tag {
+        if (typeof raw === 'string') {
+            const tagDef = this.getTagByName(raw);
+            return new Tag(raw, tagDef?.color || TagColorService.DEFAULT_COLOR);
+        } else if (raw?.name) {
+            const tagDef = this.getTagByName(raw.name);
+            return new Tag(raw.name, raw.color || tagDef?.color || TagColorService.DEFAULT_COLOR);
+        }
+        return new Tag('unknown', TagColorService.DEFAULT_COLOR);
     }
 }
 
