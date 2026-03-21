@@ -23,25 +23,13 @@ export class NoteManager {
 
     private loadNotes(): Note[] {
         const rawNotes = this.repository.loadAll();
-        // Migrate string tags to Tag objects if necessary
         return rawNotes.map((note: any) => ({
             ...note,
-            tags: (note.tags || []).map((t: string | Tag | any) => {
-                if (typeof t === 'string') {
-                    const tagDef = this.tagRepository.getTagByName(t);
-                    return new Tag(t, tagDef?.color || '#8b5cf6');
-                } else if (t.name) {
-                    const tagDef = this.tagRepository.getTagByName(t.name);
-                    return new Tag(t.name, t.color || tagDef?.color || '#8b5cf6');
-                }
-                return new Tag('unknown', '#8b5cf6');
-            })
+            tags: (note.tags || []).map((t: any) => this.tagRepository.resolveTag(t))
         }));
     }
 
     private saveNotes(notes: Note[]): void {
-        // Recalculate tag usage counts to ensure consistency
-        this.tagRepository.recalculateUsageCounts(notes);
         this.repository.saveAll(notes);
     }
 
