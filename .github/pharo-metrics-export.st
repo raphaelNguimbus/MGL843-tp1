@@ -88,9 +88,9 @@ classes do: [ :each |
     Transcript show: '  ', each name, ' loc:', loc printString; cr.
     writer nextPut: {
         each name.
+        loc.
         each numberOfMethods.
         each numberOfAttributes.
-        loc.
         each weightedMethodCount.
         each allClients size.
         each allProviders size.
