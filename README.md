@@ -43,6 +43,26 @@ Réutilisabilité - Le backend se base sur la même classe que celle développé
 
 Précision - L'ajout de la notion d'expiration pour les notes ajoute une complexité supplémentaire en termes de gestion des données et de logique métier. Nous avons dû implémenter des mécanismes pour vérifier régulièrement les notes expirées et assurer que les opérations sur les notes prennent en compte cette fonctionnalité. Une fonctionnalité de récurrence avait été envisagée, mais elle n'a pas été implémentée dans la version actuelle. Cela a nécessité une réflexion approfondie sur la structure des données et la logique de l'application pour garantir que toutes les fonctionnalités fonctionnent correctement ensemble.
 
+### Outils de visualisation des métriques
+
+Les scripts Python dans `visualization/` génèrent les graphiques à partir des CSV exportés par le pipeline Moose.
+
+```bash
+cd visualization
+uv sync
+```
+
+**Graphiques de métriques (SLOC, WMC, CBO, RFC, TCC, scatter) :**
+```bash
+uv run visualize_metrics.py ../notes-cli-classes-tp2.csv -o tp2 --prefix fig-tp2 --title TP2
+uv run visualize_metrics.py ../notes-cli-classes-tp3.csv -o tp3 --prefix fig-tp3 --title TP3
+```
+
+**Radar de comparaison avant/après réusinage :**
+```bash
+uv run radar_comparison.py ../notes-cli-classes-tp2.csv ../notes-cli-classes-tp3.csv -o tp3 --prefix fig-tp3 --classes NoteManager TagRepository
+```
+
 ### 3.2 Visualiser les métriques du projet TypeScript
 
 Il est possible de voir l'ensemble des métriques grâce au script python `visualization/visualize_metrics_tp2.py`
