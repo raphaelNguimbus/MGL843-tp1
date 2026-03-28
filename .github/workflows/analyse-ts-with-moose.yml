@@ -66,11 +66,14 @@ jobs:
               run: |
                   mkdir -p visualization/out
 
+                  RAW_PREFIX="fig-${{ github.ref_name }}"
+                  SAFE_PREFIX="$(echo "$RAW_PREFIX" | sed 's#[^A-Za-z0-9._-]#-#g')"
+
                   # TP2 charts from current CSV
                   python visualization/visualize_metrics_tp2.py \
                     export_metrics.csv \
                     -o visualization/out \
-                    --prefix fig-${{ github.ref_name }}
+                    --prefix "$SAFE_PREFIX"
 
                   echo "Generated images:"
                   ls -1 visualization/out/*.png || true
