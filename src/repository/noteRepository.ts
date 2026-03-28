@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type { Note } from '../manager/NoteManager';
+import type { Note } from '../domain/note';
 
 export interface NoteRepository {
     loadAll(): Note[];

@@ -5,15 +5,18 @@ import { NoteManager } from './manager/NoteManager';
 import { createNoteRouter } from './routes/note';
 import { createTagRouter } from './routes/tag';
 import { FileNoteRepository } from './repository/noteRepository';
-import { TagRepository } from './tag';
+import { FileTagRepository } from './repository/tagRepository';
+import { TagService } from './service/TagService';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const noteManager = new NoteManager(new FileNoteRepository("notes_db.json"), new TagRepository("tags.json"));
+const noteRepository = new FileNoteRepository('notes_db.json');
+const tagService = new TagService(new FileTagRepository('tags.json'));
+const noteManager = new NoteManager(noteRepository, tagService);
 
 // Sync tag usage counts on startup to ensure consistency
 const notes = noteManager.listNotes();
-noteManager.getTagRepository().recalculateUsageCounts(notes);
+tagService.recalculateUsageCounts(notes);
 console.log('🔄 Tag usage counts synchronized with notes database');
 
 // Middleware
@@ -23,7 +26,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // API Routes
 app.use('/api', createNoteRouter(noteManager));
-app.use('/api', createTagRouter(noteManager));
+app.use('/api', createTagRouter(tagService));
 
 // Start server
 app.listen(PORT, () => {
