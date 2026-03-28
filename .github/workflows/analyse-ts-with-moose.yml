@@ -8,6 +8,11 @@ on:
             - opened
             - synchronize
             - reopened
+permissions:
+    contents: read
+    actions: read
+    pull-requests: write
+    issues: write
 
 jobs:
     analyze:
