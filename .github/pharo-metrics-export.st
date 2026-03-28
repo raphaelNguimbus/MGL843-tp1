@@ -4,7 +4,8 @@
 "Ce script est exécuté dans une image Moose par smalltalkCI."
 "Il effectue 3 étapes :"
 "  1. Charger le modèle Famix (model.json) généré par ts2famix"
-"  2. Extraire les métriques de chaque classe (NOM, NOA, LOC)"
+"  2. Extraire les métriques de chaque classe"
+"     (NOM, NOA, LOC, WMC, CBO_in, CBO_out, RFC, TCC)"
 "  3. Écrire les résultats dans export_metrics.csv"
 "============================================================"
 
@@ -49,10 +50,10 @@ Transcript show: 'Classes found: ', classes size printString; cr.
 "Séparateur : point-virgule (;) pour compatibilité avec Excel FR."
 stream := './export_metrics.csv' asFileReference writeStream.
 writer := NeoCSVWriter on: stream.
-writer separator: $;.
+writer separator: $,.
 
 "En-tête du CSV"
-writer nextPut: #( 'Nom_Classe' 'Nb_Methodes' 'Nb_Attributs' 'Lignes_de_Code' ).
+writer nextPut: #( 'ClassName' 'SLOC' 'NumberOfMethods' 'NumberOfAttributes' 'WMC' 'CBO_in' 'CBO_out' 'RFC' 'TCC' ).
 
 "Pour chaque classe, on calcule le nombre de lignes de code (LOC)."
 "La stratégie de calcul du LOC :"
@@ -61,7 +62,7 @@ writer nextPut: #( 'Nom_Classe' 'Nb_Methodes' 'Nb_Attributs' 'Lignes_de_Code' ).
 "  - Fallback : si le fichier source n'est pas trouvé, sommer les LOC"
 "    de toutes les méthodes de la classe."
 classes do: [ :each |
-    | loc anchor srcFile content snippet |
+    | loc anchor srcFile content snippet distinctCalledMethods rfc |
     loc := 0.
 
     "Tentative de calcul via le sourceAnchor (méthode principale)"
@@ -80,12 +81,21 @@ classes do: [ :each |
         loc := each methods inject: 0 into: [ :sum :m | sum + (m numberOfLinesOfCode ifNil: [ 0 ]) ].
     ].
 
+    "Calcul du RFC : nombre de méthodes + nombre de méthodes distinctes appelées"
+    distinctCalledMethods := (each outgoingInvocations collect: [ :i | i candidates ]) flatten asSet.
+    rfc := each methods size + distinctCalledMethods size.
+
     Transcript show: '  ', each name, ' loc:', loc printString; cr.
     writer nextPut: {
         each name.
+        loc.
         each numberOfMethods.
         each numberOfAttributes.
-        loc.
+        each weightedMethodCount.
+        each allClients size.
+        each allProviders size.
+        rfc.
+        each tightClassCohesion.
     }.
 ].
 
