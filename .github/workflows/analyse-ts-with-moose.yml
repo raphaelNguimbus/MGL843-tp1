@@ -197,7 +197,7 @@ jobs:
           name: visualization-images
           path: visualization/out
 
-      - name: Upsert sticky PR comment with images
+      - name: Upsert compact sticky PR comment
         if: needs.visualize.outputs.has_images == 'true'
         uses: actions/github-script@v7
         env:
@@ -215,14 +215,9 @@ jobs:
             const marker = "<!-- ci-metrics-images-sticky-comment -->";
             const outDir = "visualization/out";
 
-            if (!fs.existsSync(outDir)) {
-              core.info("No visualization/out directory found.");
-              return;
-            }
-
-            const files = fs.readdirSync(outDir)
-              .filter(f => f.toLowerCase().endsWith(".png"))
-              .sort();
+            const files = fs.existsSync(outDir)
+              ? fs.readdirSync(outDir).filter(f => f.toLowerCase().endsWith(".png")).sort()
+              : [];
 
             if (!files.length) {
               core.info("No PNG files found.");
@@ -232,17 +227,24 @@ jobs:
             const lines = [];
             lines.push(marker);
             lines.push("## 📊 CI Metrics Visualizations");
+            lines.push(`Version: \`${version}\`  |  Branch: \`${hostBranch}\``);
             lines.push("");
-            lines.push(`Version: \`${version}\``);
-            lines.push(`Images branch: \`${hostBranch}\``);
+
+            // Compact gallery
+            lines.push("<details>");
+            lines.push("<summary>Open image gallery</summary>");
             lines.push("");
 
             for (const file of files) {
               const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${hostBranch}/${version}/${file}`;
               lines.push(`### ${file}`);
-              lines.push(`![${file}](${rawUrl})`);
+              lines.push(`<a href="${rawUrl}"><img src="${rawUrl}" width="420" /></a>`);
               lines.push("");
             }
+
+            lines.push("</details>");
+            lines.push("");
+            lines.push("_Tip: click an image to open full size._");
 
             const body = lines.join("\n");
 
@@ -259,20 +261,12 @@ jobs:
 
             if (existing) {
               await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body
+                owner, repo, comment_id: existing.id, body
               });
-              core.info(`Updated sticky comment ${existing.id}`);
             } else {
-              const created = await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body
               });
-              core.info(`Created sticky comment ${created.data.id}`);
             }
 
       - name: Note when no images exist
