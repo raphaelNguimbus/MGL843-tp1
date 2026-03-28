@@ -1,160 +1,257 @@
 name: 🥤 TypeScript Analysis with Moose
 
 on:
-    push:
-        branches: ["main"]
-    pull_request:
-        types:
-            - opened
-            - synchronize
-            - reopened
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
 permissions:
-    contents: read
-    actions: read
-    pull-requests: write
-    issues: write
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
 
 jobs:
-    analyze:
-        runs-on: ubuntu-latest
-        timeout-minutes: 30
-        steps:
-            - name: Checkout du dépôt
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  persist-credentials: true
+  analyze:
+    # Skip full analysis on PR close (cleanup job below handles that)
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "24"
-                  cache: "npm"
-            - run: npm ci
-            - run: npm run build --if-present
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
-            - name: Installer ts2famix
-              run: npm install -g ts2famix
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
 
-            - name: Générer le modèle Famix (JSON)
-              run: |
-                  # -l 4 is log warnings only
-                  ts2famix -l 4 -i tsconfig.json -o model.json
-                  echo "Modèle généré : $(wc -c < model.json) octets"
-                  # Vérification rapide que le JSON est valide
-                  python3 -c "import json; json.load(open('model.json')); print('JSON valide')"
+      - name: Install Node deps
+        run: npm ci
 
-            - name: Installer smalltalkCI (image Moose)
-              uses: hpi-swa/setup-smalltalkCI@v1
-              id: smalltalkci
-              with:
-                  smalltalk-image: Moose64-12
+      - name: Build project
+        run: npm run build --if-present
 
-            - name: Charger FamixTypeScript et exporter les métriques CSV
-              run: |
-                  # Run the Moose analysis using the Moose configuration
-                  smalltalkci -s ${{ steps.smalltalkci.outputs.smalltalk-image }} .github/moose-analyse.ston
-              shell: bash
-              timeout-minutes: 20
+      - name: Installer ts2famix
+        run: npm install -g ts2famix
 
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.11"
+      - name: Générer le modèle Famix (JSON)
+        run: |
+          ts2famix -l 4 -i tsconfig.json -o model.json
+          echo "Modèle généré : $(wc -c < model.json) octets"
+          python3 -c "import json; json.load(open('model.json')); print('JSON valide')"
 
-            - name: Install Python dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install -r visualization/requirements.txt
+      - name: Installer smalltalkCI (image Moose)
+        uses: hpi-swa/setup-smalltalkCI@v1
+        id: smalltalkci
+        with:
+          smalltalk-image: Moose64-12
 
-            - name: Generate visualization images
-              run: |
-                  mkdir -p visualization/out
+      - name: Charger FamixTypeScript et exporter les métriques CSV
+        run: |
+          smalltalkci -s ${{ steps.smalltalkci.outputs.smalltalk-image }} .github/moose-analyse.ston
+        shell: bash
+        timeout-minutes: 20
 
-                  RAW_PREFIX="fig-${{ github.ref_name }}"
-                  SAFE_PREFIX="$(echo "$RAW_PREFIX" | sed 's#[^A-Za-z0-9._-]#-#g')"
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-                  # TP2 charts from current CSV
-                  python visualization/visualize_metrics_tp2.py \
-                    export_metrics.csv \
-                    -o visualization/out \
-                    --prefix "$SAFE_PREFIX"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r visualization/requirements.txt
 
-                  echo "Generated images:"
-                  ls -1 visualization/out/*.png || true
+      - name: Generate visualization images
+        run: |
+          set -euo pipefail
+          mkdir -p visualization/out
 
-            - name: Upload visualization artifacts
-              uses: actions/upload-artifact@v4
-              id: upload_visuals
-              with:
-                  name: typescript-visualizations
-                  path: visualization/out/*.png
-                  if-no-files-found: warn
+          RAW_PREFIX="fig-${{ github.ref_name }}-${{ github.run_number }}"
+          SAFE_PREFIX="$(echo "$RAW_PREFIX" | sed 's#[^A-Za-z0-9._-]#-#g')"
+          echo "Using prefix: $SAFE_PREFIX"
 
-            - name: Upload metrics artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: typescript-metrics
-                  path: |
-                      export_metrics.md
-                      model.json
-                      export_metrics.csv
-                      
-                      - name: Commit generated images (PR only)
-                        if: github.event_name == 'pull_request'
-                        id: commit_images
-                        run: |
-                            set -e
-                            if ls visualization/out/*.png >/dev/null 2>&1; then
-                              git config user.name "github-actions[bot]"
-                              git config user.email "github-actions[bot]@users.noreply.github.com"
-                              git add visualization/out/*.png
-          
-                              if ! git diff --cached --quiet; then
-                                git commit -m "chore(ci): update generated metric visualizations"
-                                git push
-                              else
-                                echo "No image changes to commit."
-                              fi
-                            else
-                              echo "No png files found."
-                            fi
-          
-                            SHA="$(git rev-parse HEAD)"
-                            echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-                            echo "Using SHA: $SHA"
+          # TP2 charts from current exported CSV
+          python visualization/visualize_metrics.py \
+            export_metrics.csv \
+            -o visualization/out \
+            --prefix "$SAFE_PREFIX" \
+            --title "${{ github.ref_name }}"
 
-            - name: Comment each image inline on PR
-              if: github.event_name == 'pull_request'
-              uses: actions/github-script@v7
-              with:
-                  script: |
-                      const fs = require("fs");
-                      const owner = context.repo.owner;
-                      const repo = context.repo.repo;
-                      const prNumber = context.payload.pull_request.number;
+          echo "Generated images:"
+          ls -1 visualization/out/*.png || true
 
-                      // Important: use PR head ref (branch) because images were pushed there
-                      const branch = context.payload.pull_request.head.ref;
-                      const outDir = "visualization/out";
+      - name: Upload metrics artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-metrics
+          path: |
+            export_metrics.md
+            model.json
+            export_metrics.csv
 
-                      if (!fs.existsSync(outDir)) {
-                        core.info("No visualization output directory found.");
-                        return;
-                      }
+      - name: Upload visualization artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-visualizations
+          path: visualization/out/*.png
+          if-no-files-found: warn
 
-                      const files = fs.readdirSync(outDir)
-                        .filter(f => f.toLowerCase().endsWith(".png"))
-                        .sort();
+      - name: Publish images to PR host branch
+        if: github.event_name == 'pull_request'
+        id: publish_images
+        run: |
+          set -euo pipefail
 
-                      for (const file of files) {
-                        const path = `visualization/out/${file}`;
-                        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
-                        const body = `### 📊 ${file}\n\n![${file}](${rawUrl})`;
-                        await github.rest.issues.createComment({
-                          owner,
-                          repo,
-                          issue_number: prNumber,
-                          body
-                        });
-                      }
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          HOST_BRANCH="ci/pr-${PR_NUMBER}-images"
+          VERSION="v${{ github.run_number }}"
+          DEST_DIR="${VERSION}"
+
+          # Preserve generated files while switching branches
+          rm -rf /tmp/ci-images
+          mkdir -p /tmp/ci-images
+          cp -R visualization/out/. /tmp/ci-images/ || true
+
+          if ! ls /tmp/ci-images/*.png >/dev/null 2>&1; then
+            echo "No generated PNG files found; skipping publish."
+            echo "host_branch=${HOST_BRANCH}" >> "$GITHUB_OUTPUT"
+            echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch origin
+
+          if git ls-remote --heads origin "${HOST_BRANCH}" | grep -q "refs/heads/${HOST_BRANCH}$"; then
+            git checkout -B "${HOST_BRANCH}" "origin/${HOST_BRANCH}"
+          else
+            git checkout --orphan "${HOST_BRANCH}"
+            git rm -rf . || true
+          fi
+
+          mkdir -p "${DEST_DIR}"
+          cp -R /tmp/ci-images/. "${DEST_DIR}/"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${DEST_DIR}"
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(ci): PR #${PR_NUMBER} images ${VERSION}"
+            git push -u origin "${HOST_BRANCH}"
+          else
+            echo "No changes to publish on host branch."
+          fi
+
+          echo "host_branch=${HOST_BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Upsert sticky PR comment with images
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          HOST_BRANCH: ${{ steps.publish_images.outputs.host_branch }}
+          VERSION: ${{ steps.publish_images.outputs.version }}
+        with:
+          script: |
+            const fs = require("fs");
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+            const hostBranch = process.env.HOST_BRANCH;
+            const version = process.env.VERSION;
+
+            const marker = "<!-- ci-metrics-images-sticky-comment -->";
+            const outDir = "visualization/out";
+
+            if (!fs.existsSync(outDir)) {
+              core.info("No visualization/out directory found.");
+              return;
+            }
+
+            const files = fs.readdirSync(outDir)
+              .filter(f => f.toLowerCase().endsWith(".png"))
+              .sort();
+
+            if (files.length === 0) {
+              core.info("No PNG files found to comment.");
+              return;
+            }
+
+            const lines = [];
+            lines.push(marker);
+            lines.push("## 📊 CI Metrics Visualizations");
+            lines.push("");
+            lines.push(`Version: \`${version}\``);
+            lines.push(`Images branch: \`${hostBranch}\``);
+            lines.push("");
+
+            for (const file of files) {
+              const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${hostBranch}/${version}/${file}`;
+              lines.push(`### ${file}`);
+              lines.push(`![${file}](${rawUrl})`);
+              lines.push("");
+            }
+
+            const body = lines.join("\n");
+
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 }
+            );
+
+            const existing = comments.find(c =>
+              c.user?.type === "Bot" &&
+              typeof c.body === "string" &&
+              c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+              core.info(`Updated sticky comment ${existing.id}`);
+            } else {
+              const created = await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
+              });
+              core.info(`Created sticky comment ${created.data.id}`);
+            }
+
+  cleanup-pr-images-branch:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete PR image host branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const branch = `ci/pr-${prNumber}-images`;
+            const ref = `heads/${branch}`;
+
+            try {
+              await github.rest.git.deleteRef({ owner, repo, ref });
+              core.info(`Deleted branch: ${branch}`);
+            } catch (e) {
+              if (e.status === 404 || e.status === 422) {
+                core.info(`Branch does not exist or already deleted: ${branch}`);
+              } else {
+                throw e;
+              }
+            }
