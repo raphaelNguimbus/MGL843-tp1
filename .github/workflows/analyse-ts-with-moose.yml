@@ -115,6 +115,17 @@ jobs:
             -o visualization/out \
             --prefix "$SAFE_PREFIX" \
             --title "${{ github.ref_name }}"
+            
+          BEFORE_CSV="notes-cli-classes-tp2.csv"
+          if [ -f "$BEFORE_CSV" ]; then
+            python visualization/radar_comparison.py \
+              "$BEFORE_CSV" \
+              export_metrics.csv \
+              -o visualization/out \
+              --prefix "$SAFE_PREFIX"
+          else
+            echo "Baseline CSV '$BEFORE_CSV' not found; skipping radar_comparison.py"
+          fi
 
           if ls visualization/out/*.png >/dev/null 2>&1; then
             echo "has_images=true" >> "$GITHUB_OUTPUT"
