@@ -11,3 +11,5 @@ exported_notes.json
 .venv/
 __pycache__/
 *.pyc
+
+visualization/out
