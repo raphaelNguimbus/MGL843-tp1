@@ -99,6 +99,30 @@ jobs:
                       export_metrics.md
                       model.json
                       export_metrics.csv
+                      
+                      - name: Commit generated images (PR only)
+                        if: github.event_name == 'pull_request'
+                        id: commit_images
+                        run: |
+                            set -e
+                            if ls visualization/out/*.png >/dev/null 2>&1; then
+                              git config user.name "github-actions[bot]"
+                              git config user.email "github-actions[bot]@users.noreply.github.com"
+                              git add visualization/out/*.png
+          
+                              if ! git diff --cached --quiet; then
+                                git commit -m "chore(ci): update generated metric visualizations"
+                                git push
+                              else
+                                echo "No image changes to commit."
+                              fi
+                            else
+                              echo "No png files found."
+                            fi
+          
+                            SHA="$(git rev-parse HEAD)"
+                            echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+                            echo "Using SHA: $SHA"
 
             - name: Comment each image inline on PR
               if: github.event_name == 'pull_request'
