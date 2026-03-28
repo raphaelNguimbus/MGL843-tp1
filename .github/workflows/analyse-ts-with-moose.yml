@@ -197,7 +197,7 @@ jobs:
           name: visualization-images
           path: visualization/out
 
-      - name: Upsert compact sticky PR comment
+      - name: Upsert PR comment for current version
         if: needs.visualize.outputs.has_images == 'true'
         uses: actions/github-script@v7
         env:
@@ -212,7 +212,7 @@ jobs:
             const hostBranch = process.env.HOST_BRANCH;
             const version = process.env.VERSION;
 
-            const marker = "<!-- ci-metrics-images-sticky-comment -->";
+            const marker = `<!-- ci-metrics-images-${version} -->`;
             const outDir = "visualization/out";
 
             const files = fs.existsSync(outDir)
@@ -226,13 +226,12 @@ jobs:
 
             const lines = [];
             lines.push(marker);
-            lines.push("## 📊 CI Metrics Visualizations");
-            lines.push(`Version: \`${version}\`  |  Branch: \`${hostBranch}\``);
+            lines.push(`## 📊 CI Metrics Visualizations — ${version}`);
+            lines.push(`Branch: \`${hostBranch}\``);
             lines.push("");
 
-            // Compact gallery
             lines.push("<details>");
-            lines.push("<summary>Open image gallery</summary>");
+            lines.push(`<summary>Open gallery (${files.length} images)</summary>`);
             lines.push("");
 
             for (const file of files) {
@@ -253,6 +252,7 @@ jobs:
               { owner, repo, issue_number, per_page: 100 }
             );
 
+            // Only update/create comment for this exact version marker
             const existing = comments.find(c =>
               c.user?.type === "Bot" &&
               typeof c.body === "string" &&
@@ -261,12 +261,20 @@ jobs:
 
             if (existing) {
               await github.rest.issues.updateComment({
-                owner, repo, comment_id: existing.id, body
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
               });
+              core.info(`Updated ${version} comment: ${existing.id}`);
             } else {
-              await github.rest.issues.createComment({
-                owner, repo, issue_number, body
+              const created = await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
               });
+              core.info(`Created ${version} comment: ${created.data.id}`);
             }
 
       - name: Note when no images exist
