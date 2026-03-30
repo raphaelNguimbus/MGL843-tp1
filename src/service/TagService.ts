@@ -1,28 +1,30 @@
-import type { Note } from '../domain/note';
+import { Tag } from '../domain/tag';
 import type { TagDefinition } from '../domain/tag';
 import type { TagRepository } from '../repository/tagRepository';
+import { TagColorService } from './TagColorService';
 
 export class TagService {
-    private colorPalette: string[] = [
-        '#8b5cf6', // purple
-        '#3b82f6', // blue
-        '#10b981', // green
-        '#f59e0b', // amber
-        '#ef4444', // red
-        '#ec4899', // pink
-        '#14b8a6', // teal
-        '#f97316', // orange
-        '#6366f1', // indigo
-        '#84cc16', // lime
-    ];
-    private colorIndex: number = 0;
+    private colorService: TagColorService;
 
-    constructor(private repository: TagRepository) { }
+    constructor(private repository: TagRepository) {
+        this.colorService = new TagColorService();
+    }
 
-    private getNextColor(): string {
-        const color = this.colorPalette[this.colorIndex % this.colorPalette.length];
-        this.colorIndex++;
-        return color;
+    public resolveTag(name: string, color?: string): Tag {
+        if (color) {
+            return new Tag(name, color);
+        }
+        const existing = this.getTagByName(name);
+        if (existing) {
+            return new Tag(name, existing.color);
+        }
+        return new Tag(name, TagColorService.DEFAULT_COLOR);
+    }
+
+    public assignTag(name: string): Tag {
+        const tagDef = this.createOrGetTag(name);
+        this.incrementUsage(name);
+        return new Tag(tagDef.name, tagDef.color);
     }
 
     public getAllTags(): TagDefinition[] {
@@ -44,7 +46,7 @@ export class TagService {
 
         const newTag: TagDefinition = {
             name,
-            color: color || this.getNextColor(),
+            color: color || this.colorService.getNextColor(),
             usageCount: 0,
             createdAt: new Date().toISOString()
         };
@@ -100,21 +102,4 @@ export class TagService {
         }
     }
 
-    public recalculateUsageCounts(allNotes: Note[]): void {
-        const tags = this.repository.loadAll();
-
-        // Reset all counts then rebuild from notes.
-        tags.forEach(t => t.usageCount = 0);
-
-        allNotes.forEach(note => {
-            note.tags.forEach(tag => {
-                const tagDef = tags.find(t => t.name.toLowerCase() === tag.name.toLowerCase());
-                if (tagDef) {
-                    tagDef.usageCount++;
-                }
-            });
-        });
-
-        this.repository.saveAll(tags);
-    }
 }

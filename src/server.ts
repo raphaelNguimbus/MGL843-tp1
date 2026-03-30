@@ -14,11 +14,6 @@ const noteRepository = new FileNoteRepository('notes_db.json');
 const tagService = new TagService(new FileTagRepository('tags.json'));
 const noteManager = new NoteManager(noteRepository, tagService);
 
-// Sync tag usage counts on startup to ensure consistency
-const notes = noteManager.listNotes();
-tagService.recalculateUsageCounts(notes);
-console.log('🔄 Tag usage counts synchronized with notes database');
-
 // Middleware
 app.use(cors());
 app.use(express.json());

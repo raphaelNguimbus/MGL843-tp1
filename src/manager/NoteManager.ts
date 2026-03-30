@@ -1,4 +1,3 @@
-import { Tag } from '../domain/tag';
 import type { Note } from '../domain/note';
 import type { NoteRepository } from '../repository/noteRepository';
 import type { TagService } from '../service/TagService';
@@ -17,37 +16,25 @@ export class NoteManager {
 
     private loadNotes(): Note[] {
         const rawNotes = this.repository.loadAll();
-        // Migrate string tags to Tag objects if necessary
         return rawNotes.map((note: any) => ({
             ...note,
-            tags: (note.tags || []).map((t: string | Tag | any) => {
+            tags: (note.tags || []).map((t: any) => {
                 if (typeof t === 'string') {
-                    const tagDef = this.tagService.getTagByName(t);
-                    return new Tag(t, tagDef?.color || '#8b5cf6');
-                } else if (t.name) {
-                    const tagDef = this.tagService.getTagByName(t.name);
-                    return new Tag(t.name, t.color || tagDef?.color || '#8b5cf6');
+                    return this.tagService.resolveTag(t);
                 }
-                return new Tag('unknown', '#8b5cf6');
+                return this.tagService.resolveTag(t.name, t.color);
             })
         }));
     }
 
     private saveNotes(notes: Note[]): void {
-        // Recalculate tag usage counts to ensure consistency
-        this.tagService.recalculateUsageCounts(notes);
         this.repository.saveAll(notes);
     }
 
     public addNote(content: string, tags: string[] = [], expirationDate?: string): Note {
         const notes = this.loadNotes();
 
-        // Register tags in repository and get Tag objects with colors
-        const tagObjects = tags.map(tagName => {
-            const tagDef = this.tagService.createOrGetTag(tagName);
-            this.tagService.incrementUsage(tagName);
-            return new Tag(tagDef.name, tagDef.color);
-        });
+        const tagObjects = tags.map(tagName => this.tagService.assignTag(tagName));
 
         const newNote: Note = {
             id: Date.now().toString(),
@@ -82,9 +69,7 @@ export class NoteManager {
             const existingTagNames = new Set(note.tags.map(t => t.name.toLowerCase()));
             tags.forEach(tagName => {
                 if (!existingTagNames.has(tagName.toLowerCase())) {
-                    const tagDef = this.tagService.createOrGetTag(tagName);
-                    this.tagService.incrementUsage(tagName);
-                    note.tags.push(new Tag(tagDef.name, tagDef.color));
+                    note.tags.push(this.tagService.assignTag(tagName));
                     existingTagNames.add(tagName.toLowerCase());
                 }
             });
@@ -131,12 +116,7 @@ export class NoteManager {
                 this.tagService.decrementUsage(tag.name);
             });
 
-            // Create new tag objects with colors from repository
-            note.tags = tags.map(tagName => {
-                const tagDef = this.tagService.createOrGetTag(tagName);
-                this.tagService.incrementUsage(tagName);
-                return new Tag(tagDef.name, tagDef.color);
-            });
+            note.tags = tags.map(tagName => this.tagService.assignTag(tagName));
         }
 
         // Update expiration date if provided
