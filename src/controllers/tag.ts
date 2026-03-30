@@ -49,23 +49,13 @@ export const createTagController = (tagService: TagService) => {
         deleteTag: (req: Request, res: Response) => {
             try {
                 const { name } = req.params;
-
-                // Check if tag is in use
-                const tag = tagService.getTagByName(name);
-                if (tag && tag.usageCount > 0) {
-                    return res.status(400).json({
-                        error: 'Cannot delete tag that is in use',
-                        usageCount: tag.usageCount
-                    });
-                }
-
                 const deleted = tagService.deleteTag(name);
                 if (!deleted) {
                     return res.status(404).json({ error: 'Tag not found' });
                 }
                 res.status(204).send();
             } catch (error: any) {
-                res.status(500).json({ error: error.message });
+                res.status(400).json({ error: error.message });
             }
         }
     };

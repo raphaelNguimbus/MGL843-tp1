@@ -70,6 +70,11 @@ export class TagService {
     }
 
     public deleteTag(name: string): boolean {
+        const tag = this.getTagByName(name);
+        if (tag && tag.usageCount > 0) {
+            throw new Error('Cannot delete tag that is in use');
+        }
+
         const tags = this.repository.loadAll();
         const initialLength = tags.length;
         const filteredTags = tags.filter(t => t.name.toLowerCase() !== name.toLowerCase());
