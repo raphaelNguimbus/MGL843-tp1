@@ -168,16 +168,16 @@ export class TagRepository {
     }
 }
 
-export class NoteManager {
+export class NoteStorage {
     private filePath: string;
     private tagRepository: TagRepository;
 
-    constructor(fileName: string = 'notes.json') {
+    constructor(fileName: string, tagRepository: TagRepository) {
         this.filePath = path.join(process.cwd(), fileName);
-        this.tagRepository = new TagRepository();
+        this.tagRepository = tagRepository;
     }
 
-    private loadNotes(): Note[] {
+    public loadNotes(): Note[] {
         if (!fs.existsSync(this.filePath)) {
             return [];
         }
@@ -203,14 +203,29 @@ export class NoteManager {
         }
     }
 
-    private saveNotes(notes: Note[]): void {
+    public saveNotes(notes: Note[]): void {
         // Recalculate tag usage counts to ensure consistency
         this.tagRepository.recalculateUsageCounts(notes);
         fs.writeFileSync(this.filePath, JSON.stringify(notes, null, 2));
     }
 
+    public exportNotes(filePath: string, notes: Note[]): void {
+        const targetPath = path.resolve(process.cwd(), filePath);
+        fs.writeFileSync(targetPath, JSON.stringify(notes, null, 2));
+    }
+}
+
+export class NoteManager {
+    private storage: NoteStorage;
+    private tagRepository: TagRepository;
+
+    constructor(fileName: string = 'notes.json') {
+        this.tagRepository = new TagRepository();
+        this.storage = new NoteStorage(fileName, this.tagRepository);
+    }
+
     public addNote(content: string, tags: string[] = [], expirationDate?: string): Note {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
 
         // Register tags in repository and get Tag objects with colors
         const tagObjects = tags.map(tagName => {
@@ -231,12 +246,12 @@ export class NoteManager {
         }
 
         notes.push(newNote);
-        this.saveNotes(notes);
+        this.storage.saveNotes(notes);
         return newNote;
     }
 
     public listNotes(): Note[] {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
         // Trier par date de création, du plus récent au plus ancien
         return notes.sort((a, b) => {
             // Les IDs sont des timestamps, donc les trier par ID décroissant
@@ -245,7 +260,7 @@ export class NoteManager {
     }
 
     public addTags(id: string, tags: string[]): Note | null {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
         const note = notes.find((n) => n.id === id);
         if (note) {
             // Avoid duplicates
@@ -258,14 +273,14 @@ export class NoteManager {
                     existingTagNames.add(tagName.toLowerCase());
                 }
             });
-            this.saveNotes(notes);
+            this.storage.saveNotes(notes);
             return note;
         }
         return null;
     }
 
     public searchNotes(query: string): Note[] {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
         const lowerQuery = query.toLowerCase();
         return notes.filter((n) => {
             // Safely check content (handle missing or undefined content)
@@ -279,13 +294,12 @@ export class NoteManager {
     }
 
     public exportNotes(filePath: string): void {
-        const notes = this.loadNotes();
-        const targetPath = path.resolve(process.cwd(), filePath);
-        fs.writeFileSync(targetPath, JSON.stringify(notes, null, 2));
+        const notes = this.storage.loadNotes();
+        this.storage.exportNotes(filePath, notes);
     }
 
     public updateNote(id: string, content?: string, tags?: string[], expirationDate?: string | null): Note | null {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
         const note = notes.find((n) => n.id === id);
         if (!note) {
             return null;
@@ -321,12 +335,12 @@ export class NoteManager {
             }
         }
 
-        this.saveNotes(notes);
+        this.storage.saveNotes(notes);
         return note;
     }
 
     public deleteNote(id: string): boolean {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
         const note = notes.find((n) => n.id === id);
 
         if (note) {
@@ -341,12 +355,12 @@ export class NoteManager {
         if (filteredNotes.length === initialLength) {
             return false; // Note not found
         }
-        this.saveNotes(filteredNotes);
+        this.storage.saveNotes(filteredNotes);
         return true;
     }
 
     public deleteExpiredNotes(): number {
-        const notes = this.loadNotes();
+        const notes = this.storage.loadNotes();
         const now = new Date();
         const initialLength = notes.length;
 
@@ -365,7 +379,7 @@ export class NoteManager {
         });
 
         if (activeNotes.length !== initialLength) {
-            this.saveNotes(activeNotes);
+            this.storage.saveNotes(activeNotes);
             return initialLength - activeNotes.length;
         }
 
