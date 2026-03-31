@@ -17,7 +17,7 @@ const noteManager = new NoteManager(noteRepository, tagService);
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, "../public")));
 
 // API Routes
 app.use('/api', createNoteRouter(noteManager));
@@ -25,14 +25,14 @@ app.use('/api', createTagRouter(tagService));
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Notes Web Server running at http://localhost:${PORT}`);
-    console.log(`📝 Access the web interface at http://localhost:${PORT}`);
+  console.log(`🚀 Notes Web Server running at http://localhost:${PORT}`);
+  console.log(`📝 Access the web interface at http://localhost:${PORT}`);
 });
 
 // Periodic cleanup of expired notes (every 5 seconds)
 setInterval(() => {
-    const deletedCount = noteManager.deleteExpiredNotes();
-    if (deletedCount > 0) {
-        console.log(`🧹 Deleted ${deletedCount} expired note(s)`);
-    }
+  const deletedCount = noteManager.deleteExpiredNotes();
+  if (deletedCount > 0) {
+    console.log(`🧹 Deleted ${deletedCount} expired note(s)`);
+  }
 }, 5 * 1000);

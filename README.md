@@ -1,127 +1,48 @@
-# MGL843-tp2
+# MGL843-tp3
 
-### Interface Web
+### Réusinage
 
-Lancer l'interface visuelle :
+L'objectif de ce TP est d'effectuer un réusinage complet du projet en prenant pour point de départ la version issue du TP2.
 
-```bash
-npm run dev:web
-```
+#### Contributions de Dorian
+Optimisation de la CI/CD :
+- Un point notable de mon intervention concerne la mise à jour de la pipeline d'intégration continue (CI). J'ai intégré la génération automatique des métriques via tsfamix, ainsi que la création de schémas d'architecture pour chaque Pull Request (PR). Cette automatisation permet d'obtenir un feedback en temps réel sur l'impact des modifications apportées.
 
-### Fonctionnalités de l'interface web
+- Gestion des ressources : Une branche dédiée est créée pour l'hébergement des images utilisées dans les commentaires des PRs ; ces ressources sont systématiquement supprimées après la fusion (merge) de la PR pour maintenir le dépôt propre.
 
-- **📝 Créer des notes** : Interface avec formulaire pour créer des notes avec tags
-- **🔍 Rechercher** : Recherche en temps réel dans le contenu et les tags
-- **🏷️ Gestion des tags** : Ajout de tags à des notes existantes
-- **📥 Export** : Télécharger une note individuelle ou toutes les notes en JSON
-- **🗑️ Supprimer** : Suppression de notes avec confirmation
-- **✨ Design moderne** : Interface avec glassmorphism, animations fluides et design responsive
-- 
-### Ressource
+#### Refactorisation manuelle
 
-Image Pharo pour le TP2: https://github.com/ebirdyx/mgl843-TP1-Pharo/tree/tp2
+Lien vers la Pull Request : Vous pouvez consulter l'intégralité du travail de restructuration ici : PR [#7](https://github.com/raphaelNguimbus/MGL843-tp1/pull/7)
 
+L'analyse des métriques du TP2 a mis en évidence un "God File" : le fichier server.ts. Ce dernier centralisait de manière excessive la logique métier, la définition des routes et les middlewares.
 
-### 3.1 Ajouter des exigences au projet TypeScript
+Actions entreprises :
+- Conformément au principe de responsabilité unique (SRP - Single Responsibility Principle), nous avons entrepris un réusinage visant à découpler ces responsabilités dans des fichiers distincts.
 
-**Quelles sont les exigences que vous avez ajoutées ? Justifiez brièvement chaque exigence.**
+##### Ajout de contrôleurs et routes
+Ajout de contrôleurs note et tag pour encapsuler la logique HTTP.
+Création des routes dédiées pour les notes et les tags, branchées sur Express.
+Clarification des responsabilités entre couche web (routes), contrôleurs et logique métier.
 
-- Ergonomie et Utilisabilité (Interface Web) : Pour augmenter l'accessibilité de l'outil, nous avons transposé l'ensemble des fonctionnalités initialement prévues en ligne de commande (CLI) vers une interface utilisateur (UI). Ce passage au web permet une gestion visuelle plus intuitive des tâches et une adoption plus rapide pour les utilisateurs finaux.
+##### Refactorisation de la gestion des notes
+Scission de l’ancienne classe NoteManager en deux couches distinctes :
+Un NoteManager (dossier manager) centré sur la logique métier : CRUD, recherche, gestion d’expiration, gestion des tags associés.
+Un FileNoteRepository (dossier repository) responsable uniquement de la persistance des notes au format JSON.
+Introduction de l’interface NoteRepository pour découpler la logique métier du support de stockage.
+Adaptation des imports dans la CLI, les contrôleurs et les routes pour utiliser cette nouvelle structure.
 
-- Robustesse et Évolutivité (Architecture Backend) : Afin de garantir la solidité du système, nous avons intégré une couche Backend. Cette architecture assure une séparation nette entre la logique métier et l'affichage (Frontend), facilitant ainsi l'intégration future d'une base de données persistante et garantissant une meilleure intégrité des données lors des échanges.
+##### Motivation
+Mieux respecter le principe de Responsabilité Unique (SRP).
+Réduire le couplage entre logique métier et persistance, faciliter les tests et l’évolutivité (changement de stockage, ajout d’autres implémentations de repository).
+Rendre la structure du projet plus claire avec des dossiers manager et repository dédiés.
 
-- Gestion de l'Éphémérité (Date d'expiration) : Nous avons introduit la notion de cycle de vie des notes. Les utilisateurs peuvent désormais définir une date d'expiration pour chaque entrée, déclenchant une suppression automatique après échéance. Cela permet de maintenir une liste de tâches propre et pertinente sans intervention manuelle constante.
+#### Refactorisation LLM (Agent)
 
-> Planification de la Récurrence (Note sur le périmètre) : Dans l'optique d'automatiser la gestion des tâches répétitives, l'exigence de récurrence (quotidienne, hebdomadaire, mensuelle) avait été identifiée comme une extension naturelle du concept d'expiration. Cependant, suite aux contraintes de temps liées, cette fonctionnalité n'a pas été implémentée dans la version actuelle.
+Pour la suite du projet, j'ai sollicité l'agent Codex pour identifier des pistes d'amélioration. J'ai utilisé la même branche pour soumettre la Pull Request suivante : PR [#8](https://github.com/raphaelNguimbus/MGL843-tp1/pull/8).
 
-**Comment les exigences ajoutées augmentent-elles la complexité du projet ? Expliquez en quoi elles affectent la conception du projet par rapport aux exigences initiales (TP1).**
+Analyse des modifications apportées :
+- Encapsulation réussie : L'agent a encapsulé la classe Repository au sein d'une classe Service. Cette modification est pertinente car elle réduit le couplage entre la logique métier et la couche de persistance.
 
+- Limites de l'intervention : Bien que le couplage ait été amélioré, l'agent n'a pas procédé à la décomposition des différentes responsabilités de la classe NoteManager.
 
-Utilisabilté - L'ajout d'une interface web graphique moderne augmente la complexité du projet en introduisant une nouvelle couche de présentation qui nécessite la gestion de l'état, des interactions utilisateur. Cela nécessite également l'utilisation de technologies supplémentaires telles que HTML et CSS pour créer une expérience utilisateur fluide et attrayante. De plus nous avons dû implémenter une API REST pour permettre au frontend de communiquer avec le backend, ce qui ajoute une complexité supplémentaire en termes de gestion des routes, de validation des données, et de sécurité.
-
-Réutilisabilité - Le backend se base sur la même classe que celle développée et utilisée pour le CLI, ce qui nous a permis de réutiliser une grande partie du code existant pour gérer les notes, les tags, et les opérations CRUD. Cependant, nous avons dû adapter certaines parties du code pour permettre une utilisation à la fois via le CLI et l'interface web, ce qui a introduit une certaine complexité en termes de gestion des différentes interfaces utilisateur.
-
-Précision - L'ajout de la notion d'expiration pour les notes ajoute une complexité supplémentaire en termes de gestion des données et de logique métier. Nous avons dû implémenter des mécanismes pour vérifier régulièrement les notes expirées et assurer que les opérations sur les notes prennent en compte cette fonctionnalité. Une fonctionnalité de récurrence avait été envisagée, mais elle n'a pas été implémentée dans la version actuelle. Cela a nécessité une réflexion approfondie sur la structure des données et la logique de l'application pour garantir que toutes les fonctionnalités fonctionnent correctement ensemble.
-
-### 3.2 Visualiser les métriques du projet TypeScript
-
-Il est possible de voir l'ensemble des métriques grâce au script python `visualization/visualize_metrics_tp2.py`
-
-
-
-
-
-**Expliquez les métriques que vous avez choisies. Pourquoi sont-elles importantes pour évaluer la qualité de la conception ?**
-
-Pour évaluer la qualité de la conception, nous avons choisi cinq métriques statiques extraites du modèle Famix généré par ts2famix, sans exécuter le code. L'objectif était d'analyser la taille, la complexité, le couplage et la cohésion des classes, qui sont des indicateurs classiques de qualité de conception.
-
-- Le SLOC permet d'avoir une première idée de la taille des classes : plus une classe est volumineuse, plus elle risque d'être difficile à comprendre et à maintenir.
-![sloc](./visualization/fig-tp2-sloc.png "sloc")
-- Le WMC mesure la complexité interne d'une classe à travers la complexité cyclomatique de ses méthodes ; une valeur élevée indique généralement une classe plus difficile à tester et à faire évoluer.
-- ![wmc](./visualization/fig-tp2-wmc.png "wmc")
-- Le CBO évalue le niveau de dépendance entre classes : un couplage fort signifie qu'une modification peut avoir des effets de bord ailleurs dans le système. 
-![CBO](./visualization/fig-tp2-cbo.png "CBO")
-- Le RFC donne une estimation du nombre de méthodes potentiellement exécutées en réponse à un appel, ce qui impacte directement la complexité des tests. 
-![rfc](./visualization/fig-tp2-rfc.png "rfc")
-- Le TCC mesure la cohésion interne d'une classe, c'est-à-dire dans quelle mesure ses méthodes travaillent sur les mêmes données — un indicateur important pour juger si une classe respecte le principe de Responsabilité Unique.
-![tcc](./visualization/fig-tp2-tcc.png "tcc")
-
-Nous avons volontairement exclu certaines métriques comme NOC et DIT, puisque le projet n'utilise pas l'héritage. Les métriques dynamiques (couverture de tests, performance, etc.) n'ont pas été considérées car elles dépassent le cadre d'une analyse statique avec Moose.
-
-**Si vous avez dû calculer des métriques supplémentaires, expliquez comment vous les avez calculées.**
-
-Une seule métrique n'était pas directement disponible dans le modèle Famix : le RFC. Nous avons donc dû la calculer manuellement dans Pharo.
-
-Conformément à la définition CK, nous avons additionné le nombre de méthodes propres à la classe et le nombre de méthodes externes distinctes qu'elle appelle. Nous avons pris soin de dédupliquer les méthodes appelées afin d'éviter de compter plusieurs fois la même dépendance.
-
-```smalltalk
-distinctCalledMethods := (c outgoingInvocations collect: [:i | i candidates]) flatten asSet.
-rfc := c methods size + distinctCalledMethods size.
-```
-
-Nous avons également vérifié qu'une version simplifiée (sans déduplication explicite) produisait les mêmes résultats sur notre projet, ce qui montre qu'aucune méthode externe n'est appelée plusieurs fois dans une même classe. Les valeurs de RFC obtenues sont donc cohérentes avec la définition théorique.
-
-Les métriques WMC et TCC étaient disponibles directement dans Moose (weightedMethodCount et tightClassCohesion), donc aucun calcul supplémentaire n'a été nécessaire. L'ensemble des résultats a ensuite été exporté en CSV et visualisé avec Python (Matplotlib).
-
-**Quelles sont les éléments (classes, modules, méthodes, fonctions, etc.) remarquables dans le projet ? Comment les avez-vous identifiées ?**
-
-L’analyse des métriques extraites avec Moose et visualisées via Roassal et Python a permis d’identifier plusieurs classes remarquables, soit par leur complexité, soit par leur rôle central dans l’architecture.
-
-La classe NoteManager ressort comme l’élément le plus critique du projet. Elle présente des valeurs élevées en taille (SLOC), en complexité (WMC) et en couplage (CBO), et se situe dans la zone à risque du graphique WMC vs CBO. Son RFC relativement élevé confirme qu’elle concentre beaucoup de comportement, ce qui la rend plus difficile à tester et à faire évoluer.
-
-La classe TagRepository, introduite en TP2, se distingue par une complexité interne importante (WMC élevé) et surtout par une cohésion très faible (TCC bas). Cela suggère que ses méthodes manipulent peu d’attributs en commun et que la classe regroupe probablement plusieurs responsabilités.
-
-La classe NotesCLI présente une complexité plus subtile. Son WMC est faible, mais sa méthode configure est longue et contient plusieurs fonctions fléchées imbriquées, ce qui masque en partie sa complexité réelle. Son TCC dépasse 1, ce qui est théoriquement impossible pour un ratio de cohésion ; cela indique probablement une limite dans l’extraction métrique (liée à l’interprétation des fonctions fléchées par ts2famix). Nous ne considérons donc pas cette valeur comme représentative de sa cohésion réelle.
-
-À l’inverse, la classe Tag apparaît comme un exemple de conception simple et cohésive : petite taille, faible complexité et absence de couplage sortant. Elle se situe clairement dans la zone “saine” des visualisations.
-
-Ces éléments ont été identifiés en croisant les métriques principales (SLOC, WMC, CBO, RFC, TCC) et en observant les zones à risque dans les graphiques de dispersion, ce qui a permis de repérer à la fois les classes dominantes et les classes bien structurées.
-
-**Expliquez le rôle de ces éléments dans le projet. Pourquoi sont-ils importants ?**
-
-La classe Tag représente une étiquette avec un nom et une couleur. Son rôle est d’être le modèle de données partagé entre les autres classes. Elle est particulièrement stable car elle ne possède aucune dépendance, ce qui la rend facilement réutilisable dans tout le système.
-
-NoteManager gère le cycle de vie complet des notes : création, modification, suppression, recherche et expiration. C’est la classe centrale du projet, puisque toutes les opérations passent par elle ; toute faiblesse de conception à ce niveau impacte directement l’ensemble du système.
-
-TagRepository gère les tags de manière indépendante : création, couleurs, compteurs d’usage et persistance dans tags.json. Elle a été introduite en TP2 afin de retirer cette responsabilité de NoteManager, évitant ainsi qu’elle ne devienne une God Class et améliorant la séparation des responsabilités.
-
-NotesCLI configure les commandes du terminal via commander et délègue à NoteManager, tandis que server.ts expose l’API REST et démarre le planificateur d’expiration. Ces deux modules constituent les points d’entrée du système — l’un pour le CLI, l’autre pour le web — et définissent la manière dont l’utilisateur interagit avec l’application.
-
-Enfin, public/app.js gère les interactions utilisateur, les appels à l’API et la mise à jour de l’interface. Il représente le point de contact direct avec l’utilisateur web, ce qui en fait un élément déterminant pour l’expérience utilisateur.
-
-**Commentez sur la qualité de la conception du projet. Y a-t-il des éléments qui semblent mal conçus ? Pourquoi ?**
-
-Bien que l'HTML reste simple, si celui-ci vient à être plus complexe, il serait nécessaire d'utiliser un framework de frontend tel que React ou Vue.js pour gérer l'état de l'application et les interactions utilisateur de manière plus efficace. De plus, l'utilisation d'un framework permettrait de mieux structurer le code frontend et de faciliter la maintenance à long terme.
-
-Cela se fait aussi ressentir dans le fichier `public/app.js` qui contient une grande quantité de code JavaScript pour gérer les interactions utilisateur et la communication avec le backend. Bien que cela fonctionne, cela peut devenir difficile à maintenir à mesure que l'application évolue et que de nouvelles fonctionnalités sont ajoutées. De plus celui-ci mélange plusieurs logique comme les interactions utilisateur, la manipulation du DOM, et les appels API, mise à jour du style, ce qui rend le code plus difficile à comprendre et à déboguer.
-
-Pour le serveur il aurait intéressant de d'augmenter la granularité du code en séparant les différentes responsabilités dans des modules ou classes distincts. Par exemple, la logique de gestion des notes pourrait être isolée dans un module dédié, tandis que la logique de gestion des tags pourrait être dans un autre module. Cela permettrait de mieux organiser le code et de faciliter la maintenance à long terme. De plus, cela permettrait de réduire le couplage entre les différentes parties du code.
-
-Cependant, les métriques extraites avec Moose mettent en évidence des problèmes de conception plus structurants.
-La classe NoteManager cumule deux responsabilités majeures : la persistance des données (lecture/écriture JSON) et la logique métier (CRUD, recherche, expiration). Cette concentration viole le principe de Responsabilité Unique et explique ses valeurs élevées en WMC et en CBO. Sa croissance entre TP1 et TP2 (8 à 11 méthodes) confirme une tendance à centraliser le comportement plutôt qu’à le distribuer. De plus, la méthode loadNotes() relit le fichier à chaque opération, ce qui introduit un coût inutile et révèle une absence de séparation claire entre stockage et logique métier.
-
-La classe TagRepository, bien qu’introduite pour améliorer la modularité, présente une cohésion très faible (TCC=0.045). Ses méthodes couvrent des aspects hétérogènes — couleurs, compteurs d’usage, persistance — ce qui suggère qu’elle regroupe encore plusieurs responsabilités. Le fait que recalculateUsageCounts() soit exécutée au démarrage pour corriger un état potentiellement incohérent révèle également un couplage indirect entre la gestion des notes et celle des tags.
-
-À l’inverse, la classe Tag illustre une conception saine : simple, cohésive et sans dépendances sortantes. Ses métriques faibles confirment qu’elle respecte naturellement le principe de forte cohésion (WMC=1, CBO_out=0, RFC=3).
-
-Pour améliorer la conception à long terme, il serait pertinent de séparer clairement la persistance, la logique métier et la planification. Extraire un NoteStorage (persistance), recentrer NoteManager sur la logique métier, et isoler un ExpirationScheduler dédié permettrait de mieux respecter le SRP et de réduire mécaniquement la complexité et le couplage observés.
+- Constat : En l'absence d'une véritable séparation des préoccupations, la classe NoteManager conserve son statut de "God Class" (ou fichier monolithique), centralisant encore trop de fonctions disparates.
