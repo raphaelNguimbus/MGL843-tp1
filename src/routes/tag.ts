@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { NoteManager } from '../manager/NoteManager';
 import { createTagController } from '../controllers/tag';
+import { TagService } from '../service/TagService';
 
-export const createTagRouter = (noteManager: NoteManager): Router => {
+export const createTagRouter = (tagService: TagService): Router => {
     const router = Router();
-    const tagController = createTagController(noteManager);
+    const tagController = createTagController(tagService);
 
     // Tag routes
     router.get('/tags', tagController.getTags);

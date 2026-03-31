@@ -1,31 +1,29 @@
-import { Tag, TagRepository } from '../tag';
-import { FileNoteRepository, NoteRepository } from '../repository/noteRepository';
-
-export interface Note {
-    id: string;
-    content: string;
-    tags: Tag[];
-    createdAt: string;
-    expirationDate?: string;
-}
+import type { Note } from '../domain/note';
+import type { NoteRepository } from '../repository/noteRepository';
+import type { TagService } from '../service/TagService';
 
 export class NoteManager {
     private repository: NoteRepository;
-    private tagRepository: TagRepository;
+    private tagService: TagService;
 
     constructor(
-        repository: NoteRepository = new FileNoteRepository(),
-        tagRepository: TagRepository = new TagRepository()
+        repository: NoteRepository,
+        tagService: TagService
     ) {
         this.repository = repository;
-        this.tagRepository = tagRepository;
+        this.tagService = tagService;
     }
 
     private loadNotes(): Note[] {
         const rawNotes = this.repository.loadAll();
         return rawNotes.map((note: any) => ({
             ...note,
-            tags: (note.tags || []).map((t: any) => this.tagRepository.resolveTag(t))
+            tags: (note.tags || []).map((t: any) => {
+                if (typeof t === 'string') {
+                    return this.tagService.resolveTag(t);
+                }
+                return this.tagService.resolveTag(t.name, t.color);
+            })
         }));
     }
 
@@ -36,12 +34,7 @@ export class NoteManager {
     public addNote(content: string, tags: string[] = [], expirationDate?: string): Note {
         const notes = this.loadNotes();
 
-        // Register tags in repository and get Tag objects with colors
-        const tagObjects = tags.map(tagName => {
-            const tagDef = this.tagRepository.createOrGetTag(tagName);
-            this.tagRepository.incrementUsage(tagName);
-            return new Tag(tagDef.name, tagDef.color);
-        });
+        const tagObjects = tags.map(tagName => this.tagService.assignTag(tagName));
 
         const newNote: Note = {
             id: Date.now().toString(),
@@ -76,9 +69,7 @@ export class NoteManager {
             const existingTagNames = new Set(note.tags.map(t => t.name.toLowerCase()));
             tags.forEach(tagName => {
                 if (!existingTagNames.has(tagName.toLowerCase())) {
-                    const tagDef = this.tagRepository.createOrGetTag(tagName);
-                    this.tagRepository.incrementUsage(tagName);
-                    note.tags.push(new Tag(tagDef.name, tagDef.color));
+                    note.tags.push(this.tagService.assignTag(tagName));
                     existingTagNames.add(tagName.toLowerCase());
                 }
             });
@@ -122,15 +113,10 @@ export class NoteManager {
         if (tags !== undefined) {
             // Decrement usage for old tags
             note.tags.forEach(tag => {
-                this.tagRepository.decrementUsage(tag.name);
+                this.tagService.decrementUsage(tag.name);
             });
 
-            // Create new tag objects with colors from repository
-            note.tags = tags.map(tagName => {
-                const tagDef = this.tagRepository.createOrGetTag(tagName);
-                this.tagRepository.incrementUsage(tagName);
-                return new Tag(tagDef.name, tagDef.color);
-            });
+            note.tags = tags.map(tagName => this.tagService.assignTag(tagName));
         }
 
         // Update expiration date if provided
@@ -154,7 +140,7 @@ export class NoteManager {
         if (note) {
             // Decrement usage count for all tags in the note
             note.tags.forEach(tag => {
-                this.tagRepository.decrementUsage(tag.name);
+                this.tagService.decrementUsage(tag.name);
             });
         }
 
@@ -178,7 +164,7 @@ export class NoteManager {
                 if (expiration <= now) {
                     // Note is expired, decrement tag usage
                     note.tags.forEach(tag => {
-                        this.tagRepository.decrementUsage(tag.name);
+                        this.tagService.decrementUsage(tag.name);
                     });
                     return false; // Remove from list
                 }
@@ -192,10 +178,6 @@ export class NoteManager {
         }
 
         return 0;
-    }
-
-    public getTagRepository(): TagRepository {
-        return this.tagRepository;
     }
 }
 
