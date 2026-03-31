@@ -72,7 +72,7 @@ Le fichier avait donc plusieurs raisons de changer. Ce n’est pas bon pour SRP,
 - TCC = 1.333 : valeur impossible en théorie ;
 - 83 SLOC principalement dans `configure`.
 
-Le problème vient probablement de la façon dont ts2famix interprète les fonctions fléchées imbriquées. Donc la métrique est faible, mais la méthode reste longue et difficile à découper mentalement.
+> **Note — limite de ts2famix avec TypeScript :** TCC est mathématiquement borné entre 0 et 1. Une valeur de 1.333 indique un artefact de l’outil. ts2famix utilise l’API du compilateur TypeScript pour construire le modèle Famix, mais il ne reconnaît pas toujours les fonctions fléchées (`() => {}`) comme des méthodes de classe — il peut les traiter comme des propriétés ou des fonctions autonomes. Quand une fonction fléchée capture `this`, ts2famix peut générer des associations `FAMIXAccess` en double, ce qui fait gonfler le numérateur de TCC au-delà du dénominateur. Le WMC peut aussi être sous-estimé si certaines méthodes définies via des fonctions fléchées ne sont pas comptées. Ce comportement est une limitation connue de ts2famix pour les classes TypeScript qui utilisent des fonctions fléchées imbriquées. Les valeurs TCC anormales dans ce projet sont donc à lire comme des artefacts de l’outil, pas comme des mesures réelles de cohésion.
 
 #### Problème 5 — planification de l’expiration couplée au serveur
 
@@ -103,7 +103,7 @@ setInterval(() => {
 
 ### 3.2 Proposition d'améliorations
 
-À partir des problèmes de la section 3.1, on a retenu deux réusinages réalisés et une recommandation gardée de côté.
+À partir des problèmes de la section 3.1, on a retenu trois réusinages réalisés et une recommandation gardée de côté.
 
 #### Réusinage #1 — Restructuration architecturale
 Ce réusinage regroupe trois changements liés entre eux.
@@ -134,22 +134,50 @@ Le fichier `src/notes.ts` (378 lignes) regroupait trop d’éléments dans un se
 Ce changement va dans le sens de : SRP; Forte cohésion; une structure plus claire du projet.
 Ce n'est pas le changement le plus "spectaculaire", mais en pratique c'est celui qui rend le projet plus lisible quand on navigue dedans.
 
-#### Réusinage #2 — Améliorer la cohésion de TagRepository
+#### Réusinage #2 — Intégration de TagService (assistance IA)
 
-Ce réusinage cible directement le problème principal de `TagRepository`.
+Ce réusinage introduit une couche service dédiée aux tags. L’assistant IA a été utilisé pour générer le code de cette étape à partir des problèmes identifiés dans le TP2.
 
-Les changements retenus sont :
-- extraire la logique des couleurs dans `TagColorService` ;
-- supprimer `recalculateUsageCounts(notes: Note[])` — cette suppression est sûre car les compteurs d'usage sont déjà maintenus en temps réel par NoteManager via `incrementUsage()` et `decrementUsage()` à chaque opération. La méthode était un filet de sécurité redondant dont l'existence révélait un manque de confiance dans la cohérence des données ;
-- enlever l’appel de synchronisation au démarrage du serveur ;
-- déplacer la résolution des tags vers `TagRepository` avec `resolveTag()`.
+`TagRepository` mélange persistance et logique métier dans la même classe. On l’a éclaté en deux :
 
-L’objectif était de recentrer `TagRepository` sur ce qu’il doit gérer : les tags eux-mêmes, pas les notes.
-Les heuristiques visées sont : Forte cohésion; Faible couplage; SRP; Expert en information.
+- `TagService` : absorbe toute la logique métier (CRUD, validation, recherche)
+- `FileTagRepository` : gère uniquement la lecture/écriture sur disque
 
-Le point important, pour nous, c’est surtout `loadNotes()`. Dans le code du TP2, `NoteManager` commençait à gérer des cas `string` ou objet, des couleurs par défaut, et plusieurs appels à `getTagByName()`. Bref, beaucoup de logique sur les tags dans une méthode qui est censée charger des notes. C’est pour ça qu’on le lit comme un cas de **Feature Envy** : la méthode travaillait trop avec les détails d’un autre objet.
+`NoteManager` délègue maintenant via le service :
 
-**Avant (TP2)** — `loadNotes()` dans NoteManager gérait la résolution inline :
+```typescript
+// Avant — accès direct au repository
+this.tagRepository.addTag(name, color);
+
+// Après — délégation au service
+this.tagService.createTag(name, color);
+```
+
+Les heuristiques visées : **Expert en information** (la logique métier des tags est dans le service), **Indirection** (NoteManager n’accède plus directement à la persistance), **SRP** (séparation claire entre les deux responsabilités).
+
+Impact sur les métriques après ce réusinage :
+
+| Classe | SLOC | WMC | CBO_out | TCC | Changement principal |
+|---|---:|---:|---:|---:|---|
+| NoteManager | 201 → 197 | 20 → 19 | 48 → 46 | .64 → .62 | Délègue aux services |
+| TagRepo → TagService | 136 → 116 | 20 → 16 | **7 → 21** | .05 → .00 | Absorbe la logique métier |
+| FileTagRepository | nouvelle | 3 | 1 | 1.00 | Persistance isolée |
+
+Le CBO_out de TagService augmente parce qu’il centralise des responsabilités qui étaient éparpillées. C’est un compromis attendu lors d’une centralisation de logique.
+
+#### Réusinage #3 — Cohésion de TagService
+
+Ce réusinage cible la cohésion interne de `TagService` et réduit le couplage de `NoteManager` avec les entités de tag.
+
+Les changements :
+
+- **Extraction de `TagColorService`** — la logique de gestion des couleurs est déplacée dans une classe dédiée. `TagService` ne gère plus les couleurs par défaut.
+- **Ajout de `resolveTag()`** — corrige le Feature Envy dans `loadNotes()`. Dans le TP2, `NoteManager` gérait lui-même la résolution de tags bruts (string ou objet). Cette logique appartient à `TagService`.
+- **Ajout de `assignTag()`** — dans `addNote()` et `updateNote()`, NoteManager appelait `createOrGetTag()` + `incrementUsage()` + `new Tag(...)` pour chaque tag. `assignTag()` regroupe ces trois appels en un seul, et NoteManager n’a plus besoin d’importer `Tag` directement.
+- **Suppression de `recalculateUsageCounts()`** — cette méthode existait déjà dans `TagRepository` au TP2 (identifiée comme problème section 3.1). L’IA l’a conservée dans `TagService` au réusinage #2 comme filet de sécurité défensif. On l’a supprimée au réusinage #3 : les compteurs d’usage sont déjà maintenus en temps réel via `incrementUsage()` / `decrementUsage()` à chaque opération, la méthode était donc redondante et créait un couplage inutile entre les tags et les notes. L’appel au démarrage dans `server.ts` a aussi été retiré.
+- **Déplacement de la règle métier de suppression** — la vérification `usageCount > 0` était dans le contrôleur. Elle appartient à `TagService` : c’est une règle sur les tags, pas une décision HTTP. `TagService.deleteTag()` lève maintenant une erreur si le tag est encore utilisé, et le contrôleur se contente de la catcher (400 au lieu de 500).
+
+**Avant** — `loadNotes()` dans NoteManager résolvait les tags inline :
 
 ```typescript
 // NoteManager.loadNotes() — 14 lignes de logique sur les tags
@@ -160,19 +188,31 @@ tags: (note.tags || []).map((t) => {
 })
 ```
 
-**Après (TP3)** — la résolution est déléguée à `TagRepository.resolveTag()` :
+**Après** — la résolution est déléguée à `TagService.resolveTag()` :
 
 ```typescript
 // NoteManager.loadNotes() — une seule ligne
-tags: (note.tags || []).map((t) => this.tagRepository.resolveTag(t))
+tags: (note.tags || []).map((t) => this.tagService.resolveTag(t))
 
-// TagRepository.resolveTag() — gère les formats string/objet/inconnu
-resolveTag(raw) → vérifie le type, lookup getTagByName(), retourne un Tag
+// TagService.resolveTag() — gère les formats string/objet/inconnu
+resolveTag(raw) → vérifie le type, getTagByName(), retourne un Tag
 ```
 
-La logique de résolution est maintenant dans `TagRepository` (Expert en information), et `loadNotes()` se contente de déléguer.
+La logique de résolution est maintenant dans `TagService` (Expert en information), et `loadNotes()` se contente de déléguer.
 
-> **En pratique :** on a déplacé la logique au bon endroit, mais `resolveTag()` ne nous satisfait pas complètement côté code. Le `any` dans la signature annule toute la sécurité de type de l'union, la même recherche `getTagByName()` est refaite dans deux cas très proches, et la logique reste assez tassée dans quelques lignes. Ça marche, mais ce n'est pas le genre de méthode qu'on lit facilement du premier coup. Ça rappelle aussi que les métriques disent surtout où placer les responsabilités, pas si le code est vraiment propre une fois écrit.
+Impact sur les métriques :
+
+| Classe | SLOC | WMC | CBO_out | TCC | Changement principal |
+|---|---:|---:|---:|---:|---|
+| NoteManager | 197 → 178 | 19 → 19 | **46 → 34** | .62 → .49 | Import Tag supprimé |
+| TagService | 116 → 105 | 16 → 20 | 21 → 23 | .00 → .02 | resolveTag + assignTag |
+| TagColorService | nouvelle | 1 | 0 | .00 | Couleurs extraites (SRP) |
+
+Le WMC de TagService monte parce qu’on ajoute des méthodes. Le CBO_out de NoteManager baisse de 12 points parce qu’il n’importe plus directement `Tag`.
+
+Les heuristiques visées : **Expert en information** (TagService sait tout sur les tags), **Forte cohésion** (chaque classe a un rôle clair), **Faible couplage** (NoteManager ne dépend plus de Tag directement).
+
+> **En pratique :** on a déplacé la logique au bon endroit, mais `resolveTag()` ne nous satisfait pas complètement côté code. Le `any` dans la signature annule toute la sécurité de type, et la logique reste assez tassée. Ça marche, mais c’est un rappel que les métriques disent où placer les responsabilités, pas si le code est vraiment propre une fois écrit.
 
 #### Recommandation non réalisée — Extraire `ExpirationScheduler`
 
@@ -186,10 +226,11 @@ En tant que développeurs, on n'est pas entièrement d'accord. Une classe `Expir
 
 | # | Réusinage | Statut | Heuristiques principales |
 |---|---|---|---|
-| #1a | Décomposition de `server.ts` en couches | Fait (`4d0d765`) | Contrôleur, SRP, Faible couplage |
-| #1b | Introduction du patron Repository | Fait (`4d0d765`) | Indirection, DIP, Protection des variations |
-| #1c | Séparation du module `notes.ts` | Fait (`4d0d765`) | SRP, Forte cohésion |
-| #2 | Cohésion de `TagRepository` + correction du Feature Envy | Fait (PR #3) | Forte cohésion, SRP, Faible couplage, Expert en information |
+| #1a | Décomposition de `server.ts` en couches | Fait | Contrôleur, SRP, Faible couplage |
+| #1b | Introduction du patron Repository | Fait | Indirection, DIP, Protection des variations |
+| #1c | Séparation du module `notes.ts` | Fait | SRP, Forte cohésion |
+| #2 | Intégration de TagService (LLM) | Fait | Expert en information, Indirection, SRP |
+| #3 | Cohésion de TagService + correction Feature Envy | Fait | Forte cohésion, SRP, Faible couplage, Expert en information |
 | — | Extraire `ExpirationScheduler` | Non réalisé | SRP, Protection des variations |
 
 ---
@@ -200,29 +241,31 @@ En tant que développeurs, on n'est pas entièrement d'accord. Une classe `Expir
 
 Les changements ont été réalisés via Pull Requests avec CI qui passe à chaque étape.
 
-- **Réusinage #1** — restructuration architecturale complète : commit `4d0d765`
-- **Réusinage #2** — amélioration de la cohésion de `TagRepository` + correction du Feature Envy : [PR #3](https://github.com/raphaelNguimbus/MGL843-tp1/pull/3)
-- **Pipeline métriques CK** — mise à jour du script Pharo pour exporter toutes les métriques nécessaires : [PR #4](https://github.com/raphaelNguimbus/MGL843-tp1/pull/4)
+- **Réusinage #1** — restructuration architecturale complète (Dorian)
+- **Réusinage #2** — intégration de TagService, code généré par assistant IA (Dorian)
+- **Réusinage #3** — cohésion de TagService + correction du Feature Envy (Pamela)
+- **Pipeline métriques CK** — mise à jour du script Pharo pour exporter toutes les métriques nécessaires
 
 #### Amélioration avec assistant IA
 
 Les problèmes de la section 3.1 ont aussi été soumis à un assistant IA (Claude) pour comparer ses propositions avec les nôtres.
 
-Deux branches ont été construites à partir de ces suggestions :
-- **Branche de Dorian** : restructuration architecturale (`4d0d765`)
-- **Branche de Pamela** : amélioration de `TagRepository` (PR #3, commit `17992cc`)
+Trois branches ont été construites à partir de ces suggestions :
+- **Réusinage #1 (Dorian)** : restructuration architecturale manuelle
+- **Réusinage #2 (IA)** : intégration TagService — code généré par l'IA à partir des problèmes identifiés
+- **Réusinage #3 (Pamela)** : cohésion de TagService
 
 #### Comparaison des recommandations
 
-| # | Recommandation | TP2 | IA | Commentaire |
+| # | Recommandation | Équipe | IA | Commentaire |
 |---|---|---|---|---|
 | 1 | Extraire la persistance de `NoteManager` | ✅ | ✅ | Même direction |
 | 2 | Décomposer `server.ts` | ✅ | ✅ | Même direction |
 | 3 | Séparer le fichier `notes.ts` | ❌ | ✅ | Proposition de l’IA uniquement |
-| 4 | Extraire `TagColorService` | ✅ | ✅ | Identique |
-| 5 | Supprimer `recalculateUsageCounts(Note[])` | ⚠️ | ✅ | L’IA a été plus directe |
-| 6 | Ajouter `resolveTag()` | ❌ | ✅ | Proposition de l’IA uniquement |
-| 7 | Extraire `ExpirationScheduler` | ✅ | ❌ | Désaccord |
+| 4 | Extraire `TagColorService` | ✅ | ✅ | Même direction |
+| 5 | Supprimer `recalculateUsageCounts()` | ✅ | ❌ | Existait au TP2, conservée par l’IA au R#2, supprimée par l’équipe au R#3 — logique dupliquée |
+| 6 | Ajouter `resolveTag()` | ❌ | ✅ | Non identifié au TP2, proposé par l’IA |
+| 7 | Extraire `ExpirationScheduler` | ✅ | ❌ | Désaccord — l’IA a rejeté (Lazy Class) |
 
 #### Analyse du désaccord sur `ExpirationScheduler`
 
@@ -252,42 +295,50 @@ Les figures suivantes montrent l’état après réusinage :
 
 ![Radar avant/après — NoteManager et TagRepository](./visualization/tp3/fig-tp3-radar-all.png)
 
+> **Comment lire ces graphiques radar :**
+>
+> Sur tous les axes, **un polygone plus grand = meilleur état**. Pour les métriques où une valeur basse est souhaitable (CBO_out, WMC, SLOC, RFC), les valeurs sont inversées dans le script — donc une baisse de CBO en pratique apparaît comme une extension vers l'extérieur sur le radar. Par exemple, NoteManager passe de CBO_out 65 à 34, et le polygone vert ("après") s'étend plus loin sur cet axe. Pour TCC, la valeur est affichée telle quelle (plus haut = meilleur).
+>
+> **Comment le score 0–1 est calculé :** le script utilise une **normalisation min-max relative** à chaque run de comparaison. Pour chaque métrique, il prend le minimum et le maximum observés dans l'ensemble des données (avant + après, toutes les classes comparées), puis applique : `score = (valeur - min) / (max - min)`. Le score **1.0 ne représente pas une valeur absolue idéale** — il signifie simplement "meilleure valeur observée dans cette comparaison". Si on ajoute une classe avec un CBO encore plus bas, l'échelle change et tout se recalibre.
+>
+> **Est-ce la méthode standard ?** La normalisation min-max est courante pour les radars de métriques logicielles (dont le papier référencé dans le script, Scientific Reports 2023). Une alternative plus rigoureuse serait d'utiliser des **seuils absolus** connus (ex. CBO > 14 = zone à risque, TCC < 0.2 = faible cohésion) — ce qui donnerait un 1.0 avec une signification fixe indépendante du dataset. La normalisation relative est plus simple à implémenter mais moins interprétable d'une run à l'autre.
+>
+> **Limite avec NotesCLI :** la valeur TCC = 1.333 (artefact ts2famix) devient le maximum du dataset et écrase l'échelle TCC pour toutes les autres classes — leurs variations TCC apparaissent donc visuellement minimes sur le radar même quand elles sont réelles.
+
 Le point principal est que `NoteManager` et `TagRepository` ont réduit leur couplage sortant. `TagRepository` sort clairement d’une zone plus risquée sur l’axe du couplage. Les nouvelles classes créées restent petites et simples.
 
-| Classe | Métrique | TP2 | TP3 | Changement |
-|---|---|---:|---:|---|
-| TagRepository | TCC | 0.045 | 0.073 | amélioration |
-| TagRepository | CBO_out | 19 | 10 | réduction nette |
-| TagRepository | SLOC | 132 | 111 | réduction |
-| TagRepository | WMC | 20 | 24 | augmentation |
-| NoteManager | CBO_out | 65 | 43 | réduction significative |
-| NoteManager | TCC | 0.436 | 0.515 | amélioration |
-| NoteManager | SLOC | 158 | 189 | augmentation |
-| NoteManager | WMC | 17 | 20 | augmentation |
-| TagColorService | — | n’existait pas | SLOC=23, WMC=1, CBO_out=0 | nouvelle classe simple |
+| Classe | Métrique | TP2 | Après R#1 | Après R#2 | Après R#3 |
+|---|---|---:|---:|---:|---:|
+| NoteManager | SLOC | 158 | 201 | 197 | **178** |
+| NoteManager | WMC | 17 | 20 | 19 | 19 |
+| NoteManager | CBO_out | 65 | **48** | 46 | **34** |
+| NoteManager | TCC | 0.436 | 0.636 | 0.618 | 0.491 |
+| TagRepo → TagService | SLOC | 132 | 136 | 116 | **105** |
+| TagRepo → TagService | WMC | 20 | 20 | 16 | 20 |
+| TagRepo → TagService | CBO_out | 19 | **7** | 21 | 23 |
+| TagRepo → TagService | TCC | 0.045 | 0.045 | 0.000 | 0.022 |
+| FileNoteRepository | SLOC | — | **29** (nouvelle) | 29 | 29 |
+| FileTagRepository | SLOC | — | — | **23** (nouvelle) | 23 |
+| TagColorService | SLOC | — | — | — | **23** (nouvelle) |
 
 Les hausses de WMC sont à surveiller, mais elles ne racontent pas toute l’histoire :
 
-- **TagRepository (20 → 24)** : `resolveTag()` ajoute des branchements, donc la complexité monte un peu.
-- **NoteManager (17 → 20)** : on pense que c’est en partie un artefact lié à la réorganisation des fichiers et à la manière dont `ts2famix` compte la complexité.
+- **TagService (16 → 20 au R#3)** : `resolveTag()` et `assignTag()` ajoutent délibérément des branchements — c’est la logique qu’on déplace depuis NoteManager.
+- **NoteManager (17 → 20 au R#1)** : en partie un artefact lié à la réorganisation des fichiers et à la façon dont `ts2famix` compte la complexité après la séparation de modules.
 
 ##### 2) Les changements ont-ils amélioré la qualité du projet de manière mesurable ? Pourquoi ?
 
 Oui, globalement oui.
 
-Le meilleur signal est la baisse du CBO_out :
-- `NoteManager` : `65 → 43`
-- `TagRepository` : `19 → 10`
+Le meilleur signal est la baisse du CBO_out sur les 3 réusinages :
+- `NoteManager` : `65 → 34` (réduction de 48%)
+- `TagRepository` : `19 → 7` dès le R#1, puis réorganisé en TagService
 
 C’est important parce que le couplage sortant est un vrai facteur de fragilité. Après les changements, les dépendances sont mieux réparties et moins directes.
 
-La cohésion s’améliore aussi :
-- `TagRepository` : `0.045 → 0.073`
-- `NoteManager` : `0.436 → 0.515`
+La cohésion de NoteManager s’améliore aussi avec le R#1 (0.436 → 0.636), même si elle redescend légèrement après le R#3 (0.491) à cause de la réorganisation interne. TagService part de 0.0 après le R#2 et monte à 0.022 après le R#3 — c’est encore faible, mais la tendance est bonne.
 
-Ce n’est pas spectaculaire dans tous les cas, mais la tendance est bonne. `TagRepository` reste imparfait, mais il est moins dispersé qu’avant.
-
-Pour `SLOC`, on voit surtout une redistribution : on a déplacé une partie du travail vers des classes plus petites comme `TagColorService`. Donc même si tout ne baisse pas partout, l’organisation est meilleure et plus propre à maintenir.
+Pour `SLOC`, on voit surtout une redistribution : NoteManager passe de 158 à 178, mais une partie du code a migré vers `FileNoteRepository`, `FileTagRepository` et `TagColorService` — trois classes simples et ciblées. L’organisation est meilleure et plus facile à maintenir.
 
 ##### 3) Comment les améliorations de l’assistant IA se comparent-elles à vos propres changements ? Ont-elles été plus faciles ? Pourquoi ou pourquoi pas ?
 
@@ -295,6 +346,8 @@ L’assistant IA a suivi une bonne partie de notre direction, mais avec des prop
 
 L’IA a aussi vu deux choses qu’on n’avait pas explicitement formulées dans le TP2 : le problème du gros fichier `notes.ts` et le Feature Envy dans `loadNotes()`. Sur ces points, son apport a été utile.
 
-Par contre, elle a rejeté `ExpirationScheduler`, alors que nous on considère encore que ce serait un bon choix pour la lisibilité du projet. Donc l’IA aide bien pour repérer et structurer les idées, mais il faut garder une validation humaine. Elle optimise vite, mais pas toujours selon les mêmes critères qu’une équipe de dev.
+Un cas intéressant : `recalculateUsageCounts()` existait déjà dans `TagRepository` au TP2 et avait été identifiée comme problème. L’IA l’a conservée dans `TagService` au réusinage #2 comme filet de sécurité. En pratique, c’était de la logique dupliquée — les compteurs étaient déjà à jour en temps réel. On l’a supprimée au réusinage #3. C’est un exemple où le code généré par l’IA fonctionnait, mais n’était pas optimal — il faut toujours relire et valider.
 
-Oui, l’approche IA a été plus rapide. Le plan de réusinage est sorti beaucoup plus vite que notre analyse manuelle. Mais au final, il faut quand même relire, filtrer et décider. Donc plus rapide, oui. Plus autonome, pas vraiment.
+Par contre, elle a rejeté `ExpirationScheduler`, alors que nous on considère encore que ce serait un bon choix pour la lisibilité architecturale. Donc l’IA aide bien pour repérer et structurer les idées, mais il faut garder une validation humaine. Elle optimise vite par les métriques, mais pas toujours selon les mêmes critères qu’une équipe de dev.
+
+L’approche IA a été plus rapide pour générer un plan de réusinage. Mais au final, il faut quand même relire, filtrer et décider. Plus rapide, oui. Plus autonome, pas vraiment.
