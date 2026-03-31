@@ -149,7 +149,7 @@ Voici un aperçut des métriques:
 
 ![cbo](./images/TP3/cbo-dorian-pr-7.png "cbo")
 ![rfc](./images/TP3/rfc-dorian-pr-7.png "rfc")
-![sloc](./images/TP3/sloc-dorian-pr-7.png "sloc")
+![sloc](./images/TP3/sloc-dorian-pr7.png "sloc")
 ![wmc](./images/TP3/wmc-dorian-pr-7.png "wmc")
 
 
@@ -193,10 +193,10 @@ Le CBO_out de TagService augmente parce qu’il centralise des responsabilités 
 
 Voici un aperçut des métriques:
 
-![cbo](./images/TP3/cbo-dorian-pr-9.png "cbo")
-![rfc](./images/TP3/rfc-dorian-pr-9.png "rfc")
-![sloc](./images/TP3/sloc-dorian-pr-9.png "sloc")
-![wmc](./images/TP3/wmc-dorian-pr-9.png "wmc")
+![cbo](./images/TP3/cbo-dorian-pr-8.png "cbo")
+![rfc](./images/TP3/rfc-dorian-pr-8.png "rfc")
+![sloc](./images/TP3/sloc-dorian-pr-8.png "sloc")
+![wmc](./images/TP3/wmc-dorian-pr-8.png "wmc")
 
 #### Réusinage #3 — Refactorisation de NotesCLI
 
@@ -217,10 +217,10 @@ Avant cette modification, `NotesCLI` agissait comme un composant monolithique g�
 Voici un aperçu des métriques suite à cette refactorisation :
 
 ![cbo](./images/TP3/cbo-raphael-pr-37.png "cbo")
-![rfc](./images/TP3/rfc-raphael-pr-37.png "rfc")
+![rfc](./images/TP3/fig-14-merge-37-rfc.png "rfc")
 ![sloc](./images/TP3/sloc-raphael-pr-37.png "sloc")
-![tcc](./images/TP3/tcc-raphael-pr-37.png "tcc")
-![wmc](./images/TP3/wmc-raphael-pr-37.png "wmc")
+![tcc](./images/TP3/fig-14-merge-37-tcc.png "tcc")
+![wmc](./images/TP3/fig-14-merge-37-wmc.png "wmc")
 
 #### Réusinage #4 — Cohésion de TagService
 
@@ -292,10 +292,10 @@ En tant que développeurs, on n'est pas entièrement d'accord. Une classe `Expir
 
 Voici un aperçu des métriques suite à cette refactorisation :
 
-![cbo](./images/TP3/cbo-pamela-pr-35.png "cbo")
+![cbo](./images/TP3/cbo-pamela-35.png "cbo")
 ![rfc](./images/TP3/rfc-pamela-pr-35.png "rfc")
 ![sloc](./images/TP3/sloc-pamela-pr-35.png "sloc")
-![tcc](./images/TP3/tcc-pamela-pr-35.png "tcc")
+![tcc](./images/TP3/fig-11-merge-44-tcc.png "tcc")
 ![wmc](./images/TP3/wmc-pamela-pr-35.png "wmc")
 ![radar](./images/TP3/radar-pamela-pr-35.png "radar")
 ![scatter](./images/TP3/scatter-pamela-pr-35.png "scatter")
