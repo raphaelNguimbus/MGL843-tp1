@@ -125,8 +125,6 @@ def main():
     # Generate radar chart per class
     for cls in sorted(common):
         radar_chart(cls, norm_before_rows[cls], norm_after_rows[cls], METRICS, args.output, args.prefix)
-
-    # Also generate an overlay with all classes — each class normalized per-class
     if len(common) > 1:
         fig, axes = plt.subplots(1, len(common), figsize=(7 * len(common), 7),
                                  subplot_kw=dict(projection="polar"))
