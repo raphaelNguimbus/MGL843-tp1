@@ -69,3 +69,29 @@ Voici un aperçut des métriques:
 ![rfc](./images/TP3/rfc-dorian-pr-9.png "rfc")
 ![sloc](./images/TP3/sloc-dorian-pr-9.png "sloc")
 ![wmc](./images/TP3/wmc-dorian-pr-9.png "wmc")
+
+### Contributions de Raphaël
+
+#### Refactorisation de NotesCLI
+
+Cette Pull Request refactorise l'interface en ligne de commande (`NotesCLI`) pour corriger l'explosion de ses métriques RFC (Response For a Class) et CBO_out (Couplage sortant).
+
+Avant cette modification, `NotesCLI` agissait comme un composant monolithique gérant toute la configuration et l'implémentation logique du chaînage des commandes commander.
+
+**🛠️ Changements effectués**
+- **Création de l'interface `ICLICommand`** : Standardisation du contrat d'exécution pour chaque déclaration de commande.
+- **Extraction des commandes** : L'énorme bloc `.action()` de 80 lignes a été divisé en 5 classes indépendantes, cohésives, et dédiées chacune à une responsabilité unique :
+  - `CreateNoteCommand`
+  - `ListNotesCommand`
+  - `TagNoteCommand`
+  - `SearchNotesCommand`
+  - `ExportNotesCommand`
+- **Nettoyage de `NotesCLI`** : Le coordinateur a été réduit à un simple registre de tableau qui itère pacifiquement sans avoir connaissance de la logique interne des commandes.
+
+Voici un aperçu des métriques suite à cette refactorisation :
+
+![cbo](./images/TP3/cbo-raphael-pr-37.png "cbo")
+![rfc](./images/TP3/rfc-raphael-pr-37.png "rfc")
+![sloc](./images/TP3/sloc-raphael-pr-37.png "sloc")
+![tcc](./images/TP3/tcc-raphael-pr-37.png "tcc")
+![wmc](./images/TP3/wmc-raphael-pr-37.png "wmc")
