@@ -98,33 +98,35 @@ def main():
         print("No common classes found between the two CSVs.")
         return
 
-    # Combine for normalization across both datasets
-    combined = pd.concat([df_before[df_before["ClassName"].isin(common)],
-                          df_after[df_after["ClassName"].isin(common)]])
+    # Normalize per-class so differences are clearly visible
+    norm_before_rows = {}
+    norm_after_rows = {}
 
-    # Normalize: for inverted metrics (lower=better), flip so smaller = closer to center
-    for m in METRICS:
-        col = combined[m].astype(float)
-        mn, mx = col.min(), col.max()
-        if mx > mn:
+    for cls in sorted(common):
+        b_row = df_before[df_before["ClassName"] == cls].iloc[0].copy()
+        a_row = df_after[df_after["ClassName"] == cls].iloc[0].copy()
+
+        for m in METRICS:
+            bv = float(b_row[m])
+            av = float(a_row[m])
+            # Scale relative to the larger value (with padding so polygons don't touch the edge)
+            scale_max = max(bv, av) * 1.3 if max(bv, av) > 0 else 1.0
             if m in INVERT:
-                combined[m] = 1 - (col - mn) / (mx - mn)  # invert: lower value = higher on radar
+                # Lower is better → invert so improvement moves outward
+                b_row[m] = 1 - (bv / scale_max)
+                a_row[m] = 1 - (av / scale_max)
             else:
-                combined[m] = (col - mn) / (mx - mn)
-        else:
-            combined[m] = 0.5
+                b_row[m] = bv / scale_max
+                a_row[m] = av / scale_max
 
-    n_rows = len(df_before[df_before["ClassName"].isin(common)]) + len(df_after[df_after["ClassName"].isin(common)])
-    norm_before = combined.head(len(df_before[df_before["ClassName"].isin(common)]))
-    norm_after = combined.tail(len(df_after[df_after["ClassName"].isin(common)]))
+        norm_before_rows[cls] = b_row
+        norm_after_rows[cls] = a_row
 
     # Generate radar chart per class
     for cls in sorted(common):
-        b_row = norm_before[norm_before["ClassName"] == cls].iloc[0]
-        a_row = norm_after[norm_after["ClassName"] == cls].iloc[0]
-        radar_chart(cls, b_row, a_row, METRICS, args.output, args.prefix)
+        radar_chart(cls, norm_before_rows[cls], norm_after_rows[cls], METRICS, args.output, args.prefix)
 
-    # Also generate an overlay with all classes
+    # Also generate an overlay with all classes — each class normalized per-class
     if len(common) > 1:
         fig, axes = plt.subplots(1, len(common), figsize=(7 * len(common), 7),
                                  subplot_kw=dict(projection="polar"))
@@ -132,8 +134,8 @@ def main():
             axes = [axes]
 
         for ax, cls in zip(axes, sorted(common)):
-            b_row = norm_before[norm_before["ClassName"] == cls].iloc[0]
-            a_row = norm_after[norm_after["ClassName"] == cls].iloc[0]
+            b_row = norm_before_rows[cls]
+            a_row = norm_after_rows[cls]
 
             n = len(METRICS)
             angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
