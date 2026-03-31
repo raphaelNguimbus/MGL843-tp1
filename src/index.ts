@@ -2,6 +2,9 @@
 
 import { Command } from 'commander';
 import { NoteManager } from './manager/NoteManager';
+import { FileNoteRepository } from './repository/noteRepository';
+import { FileTagRepository } from './repository/tagRepository';
+import { TagService } from './service/TagService';
 
 export interface ICLICommand {
     execute(program: Command, noteManager: NoteManager): void;
@@ -101,7 +104,9 @@ class NotesCLI {
 
     constructor() {
         this.program = new Command();
-        this.noteManager = new NoteManager();
+        const noteRepository = new FileNoteRepository('notes.json');
+        const tagService = new TagService(new FileTagRepository('tags.json'));
+        this.noteManager = new NoteManager(noteRepository, tagService);
         this.commands = [
             new CreateNoteCommand(),
             new ListNotesCommand(),
